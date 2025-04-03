@@ -37,16 +37,21 @@ LIMIT ?`;
 
 app.post('/api/events/post', (req, res) => {
     console.log('Post Events starting')
-    const {clientId, coachId, serviceId, eventName, eventDate, startTime, endTime} = req.body;
+    const {clientId, coachId, serviceId, eventName, eventDate, startTime, endTime,
+    eventDescription = null,
+    attachments = null,
+    eventLocation = null} = req.body;
 
     if (!clientId || !coachId || !serviceId || !eventName || !eventDate || !startTime || !endTime) {
         return res.status(400).json({error: 'Missing required fields'});
     }
 
     db.run(`INSERT INTO Events 
-    (clientId, coachId, serviceId, eventName, eventDate, startTime, endTime)
-    VALUES (?, ?, ?, ?, ?, ?, ?)`,
-    [clientId, coachId, serviceId, eventName, eventDate, startTime, endTime],
+    (clientId, coachId, serviceId, eventName, eventDate, startTime, endTime,
+    eventDescription, attachments, eventLocation)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ? ,?)`,
+    [clientId, coachId, serviceId, eventName, eventDate, startTime, endTime,
+    eventDescription, attachments, eventLocation],
     function(err) {
         if (err) {
             return res.status(500).json({error: 'Failed to create event'});
@@ -57,5 +62,5 @@ app.post('/api/events/post', (req, res) => {
 
 
 app.listen(port, () => {
-    console.log(`Server running on port http://localhost/:${port}`);
+    console.log(`Server running on port http://localhost:${port}`);
 });
