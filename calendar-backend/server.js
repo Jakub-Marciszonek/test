@@ -13,12 +13,13 @@ const db = new sqlite3.Database('calendar-backend/data/Essentials.db', (err) => 
 
 app.use(express.json());
 
-app.get('/api/events', (req, res) => {
-    console.log('Get Events starting')
+// ### Passive API for default render ###
+app.get('/Default', (req, res) => {
+    console.log('Get Default starting')
     // results = number of displayed rows
     const results = parseInt(req.query.results) || 100;
     const filterDateStart = req.query.from; // Format YYYY-MM-DD
-    const filterDateEnd = req.query.to
+    const filterDateEnd = req.query.to; // Format YYYY-MM-DD
 
     let filterDateQuery = '';
     let params = [];
@@ -36,20 +37,19 @@ app.get('/api/events', (req, res) => {
             return res.status(400).send('Invalid date format. Use YYYY-MM-DD');
         }
         
-        filterDateQuery += filterDateQuery ? 'AND Events.eventDate <= ? ' :
-'WHERE Events.eventDate <= ? ';
+        filterDateQuery += filterDateQuery ? 'AND Events.eventDate <= ? ' : // checks if filterDateQuery is empty
+'WHERE Events.eventDate <= ? '; // if it's not empty adds this ^^^ querry
+// if it's adds this ^^^ querry
         params.push(filterDateEnd);
     }
 
     params.push(results);
 
     const query = `SELECT Events.eventId, Events.eventName, Events.eventDescription, 
-Events.eventDate, Events.startTime, Events.EndTime, Services.serviceId,
-Coaches.coachName, Clients.ageGroup
+Events.eventDate, Events.startTime, Events.EndTime,
+Coaches.coachName
 FROM Events
-INNER JOIN Services ON Events.serviceId = Services.serviceId
 INNER JOIN Coaches ON Events.coachId = Coaches.coachId
-INNER JOIN Clients ON Events.clientId = Clients.clientId
 ${filterDateQuery}
 LIMIT ?`;
 
@@ -63,7 +63,7 @@ LIMIT ?`;
     });
 });
 
-app.post('/api/events/post', (req, res) => {
+app.post('/events/post', (req, res) => {// adding event
     console.log('Post Events starting')
     const {clientId, coachId, serviceId, eventName, eventDate, startTime, endTime,
     eventDescription = null,
