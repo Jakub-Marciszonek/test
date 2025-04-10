@@ -63,8 +63,33 @@ LIMIT ?`;
     });
 });
 
+
+// ----------- simplify post api for testing -----------
+app.post('event/test', (req, res) => {
+    const {eventName, eventDate, startTime, endTime} = req.body;
+
+    console.log(`Recieved: \n ${JSON.stringify(req.body)}`);
+    
+    if (!eventName || !eventDate || !startTime || !endTime) {
+        return res.status(400).json({error: 'Missing required fields'});
+    }
+
+    db.run(`INSERT INTO Events(eventName, eventDate, startTime, endTime)
+    Values (?, ?, ?, ?)`,
+    [eventName, eventDate, startTime, endTime],
+    
+    function(err) {
+        if (err) {
+            console.error(`Database error: ${err.message}`);
+            return res.status(500).json({error: 'Failed to excute querry'});
+        }
+        res.status(201).json({message: 'Querry executed succesfuly'});
+    });
+});
+
 app.post('/events/post', (req, res) => {// adding event
     console.log('Post Events starting')
+
     const {clientId, coachId, serviceId, eventName, eventDate, startTime, endTime,
     eventDescription = null,
     attachments = null,
@@ -82,7 +107,7 @@ app.post('/events/post', (req, res) => {// adding event
     eventDescription, attachments, eventLocation],
     function(err) {
         if (err) {
-            return res.status(500).json({error: 'Failed to create event'});
+            return res.status(500).json({error: 'Failed to excute querry'});
         }
         res.status(201).json({message: 'Event created', eventId: this.lastID});
     });
