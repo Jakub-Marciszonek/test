@@ -3,14 +3,22 @@
     "express": "^4.21.2",
     "sqlite3": "^5.1.7"
   },
-  "name": "test",
+  "name": "testing",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
-  "author": "",
+  "author": "Jakub",
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Jakub-Marciszonek/test.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Jakub-Marciszonek/test/issues"
+  },
+  "homepage": "https://github.com/Jakub-Marciszonek/test#readme",
   "description": ""
 }
