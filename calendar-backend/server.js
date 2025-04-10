@@ -17,6 +17,32 @@ app.get('/api/events', (req, res) => {
     console.log('Get Events starting')
     // results = number of displayed rows
     const results = parseInt(req.query.results) || 100;
+    const filterDateStart = req.query.from; // Format YYYY-MM-DD
+    const filterDateEnd = req.query.to
+
+    let filterDateQuery = '';
+    let params = [];
+
+    if (filterDateStart) {
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(filterDateStart)) {
+            return res.status(400).send('Invalid date format. Use YYYY-MM-DD');
+        }
+        filterDateQuery += 'WHERE Events.eventDate >= ?';
+        params.push(filterDateStart);
+    }
+
+    if (filterDateEnd) {
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(filterDateEnd)) {
+            return res.status(400).send('Invalid date format. Use YYYY-MM-DD');
+        }
+        
+        filterDateQuery += filterDateQuery ? 'AND Events.eventDate <= ? ' :
+'WHERE Events.eventDate <= ? ';
+        params.push(filterDateEnd);
+    }
+
+    params.push(results);
+
     const query = `SELECT Events.eventId, Events.eventName, Events.eventDescription, 
 Events.eventDate, Events.startTime, Events.EndTime, Services.serviceId,
 Coaches.coachName, Clients.ageGroup
@@ -24,8 +50,10 @@ FROM Events
 INNER JOIN Services ON Events.serviceId = Services.serviceId
 INNER JOIN Coaches ON Events.coachId = Coaches.coachId
 INNER JOIN Clients ON Events.clientId = Clients.clientId
+${filterDateQuery}
 LIMIT ?`;
-    db.all(query, [results], (err, rows) => {
+
+    db.all(query, params, (err, rows) => {
         if (err) {
             console.error('Error executing query: ', err);
             res.status(500).send('Server error');
