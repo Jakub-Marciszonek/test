@@ -15,9 +15,9 @@ app.use(express.json());
 
 // ### Passive API for default render ###
 app.get('/Default', (req, res) => {
-    console.log('Get Default starting')
-    // results = number of displayed rows
-    const results = parseInt(req.query.results) || 100;
+    console.log('Get Default starting');
+                                            // 30days*8h=240h
+    const results = parseInt(req.query.results) || 250; // results is number of results in api
     const filterDateStart = req.query.from; // Format YYYY-MM-DD
     const filterDateEnd = req.query.to; // Format YYYY-MM-DD
 
@@ -62,13 +62,64 @@ LIMIT ?`;
         res.json(rows);
     });
 });
+// ### Personalized API for displaying detailed data ###
+app.get('/personal', (req, res) => {// for now it's usin client name and id
+    console.log('Get Personal starting');
 
-app.get('personal', (req, res) => {
+    const clientId = req.query.clientId // clientId and clientName required to use api
+    const clientName = req.query.clientName;
     
-})
+    const results = parseInt(req.query.results) || 250; // results is number of results in api
+    const filterDateStart = req.query.from; // Format YYYY-MM-DD
+    const filterDateEnd = req.query.to; // Format YYYY-MM-DD
+    
+    if (!clientName || !clientId) {
+        return res.status(400).send('Missing required parameter: clientName or clientId');
+    }
+
+    let filterDateQuery = '';
+    let params = [clientName, clientId];
+
+    if (filterDateStart) {
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(filterDateStart)) {
+            return res.status(400).send('Invalid date format. Use YYYY-MM-DD');
+        }
+        filterDateQuery += 'AND Events.eventDate >= ?';
+        params.push(filterDateStart);
+    }
+
+    if (filterDateEnd) {
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(filterDateEnd)) {
+            return res.status(400).send('Invalid date format. Use YYYY-MM-DD');
+        }
+        
+        filterDateQuery += 'AND Events.eventDate <= ?';
+    }
+
+    params.push(results);
+
+    const query = `SELECT Events.eventId, Events.eventName, Events.eventDescription, 
+Events.eventDate, Events.startTime, Events.EndTime, Events.eventLocation,
+Services.serviceName, Coaches.coachName, Clients.clientName
+FROM Events
+INNER JOIN Clients On Events.clientId = Clients.clientId
+INNER JOIN Services ON Events.serviceId = Services.serviceId
+INNER JOIN Coaches ON Events.coachId = Coaches.coachId
+WHERE Clients.clientName = ? AND Clients.clientId = ? ${filterDateQuery}
+LIMIT ?`;
+
+db.all(query, params, (err, rows) => {
+    if (err) {
+        console.error('Error executing query: ', err);
+        res.status(500).send('Server error');
+        return;
+    }
+    res.json(rows);
+});
+});
 
 // ----------- simplify post api for testing -----------
-app.post('event/test', (req, res) => {
+app.post('/event/test', (req, res) => {
     const {eventName, eventDate, startTime, endTime} = req.body;
 
     console.log(`Recieved: \n ${JSON.stringify(req.body)}`);
