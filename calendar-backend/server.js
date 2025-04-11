@@ -63,6 +63,9 @@ LIMIT ?`;
     });
 });
 
+app.get('personal', (req, res) => {
+    
+})
 
 // ----------- simplify post api for testing -----------
 app.post('event/test', (req, res) => {
@@ -91,12 +94,21 @@ app.post('/events/post', (req, res) => {// adding event
     console.log('Post Events starting')
 
     const {clientId, coachId, serviceId, eventName, eventDate, startTime, endTime,
-    eventDescription = null,
-    attachments = null,
+    eventDescription = null, // variables with "null" are optional
+    attachments = null,// thats why the do have value already
     eventLocation = null} = req.body;
+
+    console.log('Received bodu:', req.body);
 
     if (!clientId || !coachId || !serviceId || !eventName || !eventDate || !startTime || !endTime) {
         return res.status(400).json({error: 'Missing required fields'});
+    }
+
+    const eventStartDateTime = new Date(`${eventDate}T${startTime}`); // combines eventDate and StartTime for datetime format
+    const NoticeDateTime = new Date(currentDateTime.getTime() + 2 * 60* 60 * 1000);
+    //                                                         h^  m^  s^  ms^
+    if (eventStartDateTime <= NoticeDateTime) {
+        return res.status(400).json({error: 'Events must start in the future, with at least a two-hour notice'});
     }
 
     db.run(`INSERT INTO Events 
