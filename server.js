@@ -8,7 +8,7 @@ const port = process.env.PORT || 3000;
 app.use(express.json());
 
 let db;
-//test
+
 (async function() {
     db = await Database.open(process.env.DB_PATH);
     console.log('Connected to SQLite database');
@@ -64,42 +64,43 @@ LIMIT ?`;
     }
 });
 // ### Personalized API for displaying detailed data ###
-app.get('/personal', (req, res) => {// for now it's usin client name and id
-    console.log('Get Personal starting');
+app.get('/personal', async (req, res) => {// for now it's usin client name and id
+    try{
+        console.log('Get Personal starting');
 
-    const clientId = req.query.clientId // clientId and clientName required to use api
-    const clientName = req.query.clientName;
-    
-    const results = parseInt(req.query.results) || 250; // results is number of results in api
-    const filterDateStart = req.query.from; // Format YYYY-MM-DD
-    const filterDateEnd = req.query.to; // Format YYYY-MM-DD
-    
-    if (!clientName || !clientId) {
-        return res.status(400).send('Missing required parameter: clientName or clientId');
-    }
-
-    let filterDateQuery = '';
-    let params = [clientName, clientId];
-
-    if (filterDateStart) {
-        if (!/^\d{4}-\d{2}-\d{2}$/.test(filterDateStart)) {
-            return res.status(400).send('Invalid date format. Use YYYY-MM-DD');
-        }
-        filterDateQuery += 'AND Events.eventDate >= ?';
-        params.push(filterDateStart);
-    }
-
-    if (filterDateEnd) {
-        if (!/^\d{4}-\d{2}-\d{2}$/.test(filterDateEnd)) {
-            return res.status(400).send('Invalid date format. Use YYYY-MM-DD');
-        }
+        const clientId = req.query.clientId // clientId and clientName required to use api
+        const clientName = req.query.clientName;
         
-        filterDateQuery += 'AND Events.eventDate <= ?';
-    }
+        const results = parseInt(req.query.results) || 250; // results is number of results in api
+        const filterDateStart = req.query.from; // Format YYYY-MM-DD
+        const filterDateEnd = req.query.to; // Format YYYY-MM-DD
+        
+        if (!clientName || !clientId) {
+            return res.status(400).send('Missing required parameter: clientName or clientId');
+        }
 
-    params.push(results);
+        let filterDateQuery = '';
+        let params = [clientName, clientId];
 
-    const query = `SELECT Events.eventId, Events.eventName, Events.eventDescription, 
+        if (filterDateStart) {
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(filterDateStart)) {
+                return res.status(400).send('Invalid date format. Use YYYY-MM-DD');
+            }
+            filterDateQuery += 'AND Events.eventDate >= ?';
+            params.push(filterDateStart);
+        }
+
+        if (filterDateEnd) {
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(filterDateEnd)) {
+                return res.status(400).send('Invalid date format. Use YYYY-MM-DD');
+            }
+            
+            filterDateQuery += 'AND Events.eventDate <= ?';
+        }
+
+        params.push(results);
+
+        const query = `SELECT Events.eventId, Events.eventName, Events.eventDescription, 
 Events.eventDate, Events.startTime, Events.EndTime, Events.eventLocation,
 Services.serviceName, Coaches.coachName, Clients.clientName
 FROM Events
@@ -109,18 +110,17 @@ INNER JOIN Coaches ON Events.coachId = Coaches.coachId
 WHERE Clients.clientName = ? AND Clients.clientId = ? ${filterDateQuery}
 LIMIT ?`;
 
-db.all(query, params, (err, rows) => {
-    if (err) {
-        console.error('Error executing query: ', err);
-        res.status(500).send('Server error');
-        return;
+const rows = await db.all(query, params);
+res.json(rows);
+    } catch (err) {
+        console.error('Error executing query:', err);
+        return res.status(500).send('Server error');
     }
-    res.json(rows);
-});
 });
 
 // ----------- simplify post api for testing -----------
-app.post('/event/test', (req, res) => {
+app.post('/event/test', async (req, res) => {
+    try{
     const {eventName, eventDate, startTime, endTime} = req.body;
 
     console.log(`Recieved: \n ${JSON.stringify(req.body)}`);
@@ -132,17 +132,16 @@ app.post('/event/test', (req, res) => {
     db.run(`INSERT INTO Events(eventName, eventDate, startTime, endTime)
     Values (?, ?, ?, ?)`,
     [eventName, eventDate, startTime, endTime],
-    
-    function(err) {
-        if (err) {
-            console.error(`Database error: ${err.message}`);
-            return res.status(500).json({error: 'Failed to excute querry'});
-        }
-        res.status(201).json({message: 'Querry executed succesfuly'});
-    });
+    );
+    res.status(201).json({message: 'Event created', eventId: result.lastID});
+    } catch (err) {
+        console.error('Database error:', err);
+        return res.status(500).json({error: 'Failed to execute query'});
+    }
 });
 
-app.post('/events/post', (req, res) => {// adding event
+app.post('/events/post', async (req, res) => {// adding event
+    try{
     console.log('Post Events starting')
 
     const {clientId, coachId, serviceId, eventName, eventDate, startTime, endTime,
@@ -163,18 +162,19 @@ app.post('/events/post', (req, res) => {// adding event
         return res.status(400).json({error: 'Events must start in the future, with at least a two-hour notice'});
     }
 
-    db.run(`INSERT INTO Events 
+    const result = await db.run(`INSERT INTO Events 
     (clientId, coachId, serviceId, eventName, eventDate, startTime, endTime,
     eventDescription, attachments, eventLocation)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ? ,?)`,
     [clientId, coachId, serviceId, eventName, eventDate, startTime, endTime,
     eventDescription, attachments, eventLocation],
-    function(err) {
-        if (err) {
-            return res.status(500).json({error: 'Failed to excute querry'});
-        }
-        res.status(201).json({message: 'Event created', eventId: this.lastID});
-    });
+    );
+
+    res.status(201).json({message: 'Event created', eventId: result.lastID});
+} catch (err) {
+    console.error('Database error:', err);
+    return res.status(500).json({error: 'Failed to execute query'});
+}
 });
 
 
