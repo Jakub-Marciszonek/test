@@ -1,51 +1,54 @@
+require('dotenv').config();
 const express = require('express');
+const { Database } = require('sqlite-async');
+console.log(Database);
 const app = express();
 const port = process.env.PORT || 3000;
-const sqlite3 = require('sqlite3').verbose();
-
-const db = new sqlite3.Database('calendar-backend/data/Essentials.db', (err) => {
-    if (err) {
-        console.error('Database connection error:', err.message);
-    } else {
-        console.log('Connected to SQLite database');
-    }
-});
 
 app.use(express.json());
 
+let db;
+
+(async function() {
+    db = await Database.open(process.env.DB_PATH);
+    console.log('Connected to SQLite database');
+})();
+
 // ### Passive API for default render ###
-app.get('/Default', (req, res) => {
-    console.log('Get Default starting');
-                                            // 30days*8h=240h
-    const results = parseInt(req.query.results) || 250; // results is number of results in api
-    const filterDateStart = req.query.from; // Format YYYY-MM-DD
-    const filterDateEnd = req.query.to; // Format YYYY-MM-DD
+app.get('/Default', async (req, res) => {
+    try{
+        console.log('Get Default starting');
+                                                // 30days*8h=240h
+        const results = parseInt(req.query.results) || 250; // results is number of results in api
+        const filterDateStart = req.query.from; // Format YYYY-MM-DD
+        const filterDateEnd = req.query.to; // Format YYYY-MM-DD
 
-    let filterDateQuery = '';
-    let params = [];
+        let filterDateQuery = '';
+        let params = [];
 
-    if (filterDateStart) {
-        if (!/^\d{4}-\d{2}-\d{2}$/.test(filterDateStart)) {
-            return res.status(400).send('Invalid date format. Use YYYY-MM-DD');
+        if (filterDateStart) {
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(filterDateStart)) {
+                return res.status(400).send('Invalid date format. Use YYYY-MM-DD');
+            }
+            filterDateQuery += 'WHERE Events.eventDate >= ?';
+            params.push(filterDateStart);
         }
-        filterDateQuery += 'WHERE Events.eventDate >= ?';
-        params.push(filterDateStart);
-    }
 
-    if (filterDateEnd) {
-        if (!/^\d{4}-\d{2}-\d{2}$/.test(filterDateEnd)) {
-            return res.status(400).send('Invalid date format. Use YYYY-MM-DD');
-        }
-        
-        filterDateQuery += filterDateQuery ? 'AND Events.eventDate <= ? ' : // checks if filterDateQuery is empty
+        if (filterDateEnd) {
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(filterDateEnd)) {
+                return res.status(400).send('Invalid date format. Use YYYY-MM-DD');
+            }
+            
+            filterDateQuery += filterDateQuery ? 'AND Events.eventDate <= ? ' : // checks if filterDateQuery is empty
 'WHERE Events.eventDate <= ? '; // if it's not empty adds this ^^^ querry
 // if it's adds this ^^^ querry
-        params.push(filterDateEnd);
-    }
+            params.push(filterDateEnd);
+        }
+        
+        params.push(results);
 
-    params.push(results);
-
-    const query = `SELECT Events.eventId, Events.eventName, Events.eventDescription, 
+        const query = `
+SELECT Events.eventId, Events.eventName, 
 Events.eventDate, Events.startTime, Events.EndTime,
 Coaches.coachName
 FROM Events
@@ -53,14 +56,12 @@ INNER JOIN Coaches ON Events.coachId = Coaches.coachId
 ${filterDateQuery}
 LIMIT ?`;
 
-    db.all(query, params, (err, rows) => {
-        if (err) {
-            console.error('Error executing query: ', err);
-            res.status(500).send('Server error');
-            return;
-        }
+        const rows = await db.all(query, params);
         res.json(rows);
-    });
+    } catch (err) {
+        console.error('Error executing query:', err);
+        return res.status(500).send('Server error');
+    }
 });
 // ### Personalized API for displaying detailed data ###
 app.get('/personal', (req, res) => {// for now it's usin client name and id
