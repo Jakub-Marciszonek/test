@@ -8,7 +8,7 @@ const port = process.env.PORT || 3000;
 app.use(express.json());
 
 let db;
-
+//test
 (async function() {
     db = await Database.open(process.env.DB_PATH);
     console.log('Connected to SQLite database');
