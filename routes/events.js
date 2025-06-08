@@ -97,18 +97,9 @@ router.post('/test', [
         if (!errors.isEmpty()) {
             return res.status(400).json({ errors: errors.array() });
         }
-
-        const {eventName, eventDate, startTime, endTime} = req.body;
-
-        console.log(`Recieved: \n ${JSON.stringify(req.body)}`);
         
-        const result = await db.run(
-            `INSERT INTO Events (eventName, eventDate, startTime, endTime)
-            VALUES (?, ?, ?, ?)`,
-            [eventName, eventDate, startTime, endTime]
-        );
-
-        res.status(201).json({message: 'Event created', eventId: result.lastID});
+        const result = await eventModel.createEventTest(req.body);
+        res.status(201).json(result);
     } catch (err) {
         console.error('Database error:', err);
         return res.status(500).json({error: 'Failed to execute query'});

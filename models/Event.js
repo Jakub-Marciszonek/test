@@ -42,6 +42,24 @@ class EventModel {
             message: 'Event created successfully'
         };
     }
+
+    async createEventTest({
+        eventName, eventDate, startTime, endTime
+    }) {
+        const query = `
+        INSERT INTO Events (eventName, eventDate, startTime, endTime)
+            VALUES (?, ?, ?, ?)`;
+        
+        const params = [
+            eventName, eventDate, startTime, endTime
+        ];
+
+        const result = await this.db.run(query, params);
+        return {
+            eventId: result.lastID,
+            message: 'Event created successfully'
+        };
+    }
 }
 
 
