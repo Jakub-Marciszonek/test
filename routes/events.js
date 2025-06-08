@@ -1,16 +1,17 @@
 const express = require('express');
 const { body, query, param, validationResult } = require('express-validator');
+const eventController = require('../controllers/eventController');
 const EventModel  = require('../models/Event.js');
 
 const router = express.Router();
 
 let db;
-let eventModel;
 
 function setDb(database) {
     db = database;
     eventModel = new EventModel(db);
 }
+let eventModel;
 
 // ### Passive API for default render ###
 // Event to be displayed does have to not have empty:
@@ -20,23 +21,7 @@ router.get('/', [               //results= number of results in api
     query('from').optional().isDate({ format: 'YYYY-MM-DD' }),
     query('to').optional().isDate({ format: 'YYYY-MM-DD' })
 ], async (req, res) => {
-    if (!db) {
-        return res.satatus(503).json({ error: 'Database not initialized' });
-    }
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-    }
-
-    try{
-        console.log('Get events starting');
-        
-        const rows = await eventModel.getEvents(req.query);
-        res.json(rows);
-    } catch (err) {
-        console.error('Error executing query:', err);
-        return res.status(500).send('Server error');
-    }
+    eventController.getEvent(req, res, eventModel);
 });
 
 router.post('/post', [
@@ -58,28 +43,7 @@ router.post('/post', [
     body('attachments').optional().isArray(),
     body('eventLocation').optional().isString()
 ],async (req, res) => {// adding event
-    try{
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ errors: errors.array() });
-        }
-        const currentDateTime = new Date();
-        // Validate that eventDate is not in the past and has at least a two-hour notice
-        const { eventDate, startTime } = req.body;
-        const eventStartDateTime = new Date(`${eventDate}T${startTime}`); // combines eventDate and StartTime for datetime format
-        const NoticeDateTime = new Date(currentDateTime.getTime() + 2 * 60* 60 * 1000);
-        //                                                         h^  m^  s^  ms^
-        if (eventStartDateTime <= NoticeDateTime) {
-            return res.status(400).json({error: 'Events must start in the future, with at least a two-hour notice'});
-        }
-
-        const result = await eventModel.createEvent(req.body);
-        res.status(201).json(result);
-
-    } catch (err) {
-        console.error('Database error:', err);
-        return res.status(500).json({error: 'Failed to execute query'});
-    }
+    eventController.createEvent(req, res, eventModel);
 });
 
 // ----------- simplify post api for testing -----------
