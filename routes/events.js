@@ -5,8 +5,9 @@ const EventModel  = require('../models/Event.js');
 
 const router = express.Router();
 
+// ### Database connection setup ###
+// This will be set by the server.js file
 let db;
-
 function setDb(database) {
     db = database;
     eventModel = new EventModel(db);
@@ -21,9 +22,12 @@ router.get('/', [               //results= number of results in api
     query('from').optional().isDate({ format: 'YYYY-MM-DD' }),
     query('to').optional().isDate({ format: 'YYYY-MM-DD' })
 ], async (req, res) => {
+    // send query parameters to controller
     eventController.getEvent(req, res, eventModel);
 });
 
+
+// ----------- Post API for adding events -----------
 router.post('/post', [
     body('clientId').notEmpty().isInt().withMessage(
         'Client ID is required and must be an integer'),
@@ -43,6 +47,8 @@ router.post('/post', [
     body('attachments').optional().isArray(),
     body('eventLocation').optional().isString()
 ],async (req, res) => {// adding event
+    
+    // send query parameters to controller
     eventController.createEvent(req, res, eventModel);
 });
 
