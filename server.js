@@ -2,9 +2,9 @@ require('dotenv').config();
 const express = require('express');
 const { Database } = require('sqlite-async');
 console.log(Database);
-const {router: eventsRouter, setDb: setEventDb } = require('./routes/events.js');
+const { router: eventsRouter, setDb: setEventDb } = require('./routes/events.js');
 
-const {router: personalRouter, setDb: setPersonalDb} = require('./routes/personal.js');
+const { router: personalRouter, setDb: setPersonalDb } = require('./routes/personal.js');
 //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 // placeholder for the secound router presumambly personal api is going to be in events.js
 const app = express();
@@ -14,7 +14,7 @@ app.use(express.json());
 
 let db;
 
-(async function() {
+(async function () {
     try {
         db = await Database.open(process.env.DB_PATH);
         setEventDb(db); // Set the database instance for the events router
@@ -34,9 +34,9 @@ let db;
 
         app.listen(port, () => {
             console.log(`Server running on port http://localhost:${port}`);
-        }); 
-        } catch (err) {
-            console.error('Database connection error:', err);
-            process.exit(1);
+        });
+    } catch (err) {
+        console.error('Database connection error:', err);
+        process.exit(1);
     }
 })();

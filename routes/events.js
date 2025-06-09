@@ -1,7 +1,7 @@
 const express = require('express');
 const { body, query, param, validationResult } = require('express-validator');
 const eventController = require('../controllers/eventController');
-const EventModel  = require('../models/Event.js');
+const EventModel = require('../models/Event.js');
 
 const router = express.Router();
 
@@ -46,8 +46,8 @@ router.post('/post', [
     body('eventDescription').optional().isString(),
     body('attachments').optional().isArray(),
     body('eventLocation').optional().isString()
-],async (req, res) => {// adding event
-    
+], async (req, res) => {// adding event
+
     // send query parameters to controller
     eventController.createEvent(req, res, eventModel);
 });
@@ -61,18 +61,18 @@ router.post('/test', [
         'Start time must be in HH:MM format'),
     body('endTime').notEmpty().matches(/^([01]\d|2[0-3]):([0-5]\d)$/).withMessage(
         'Start time must be in HH:MM format'),
-],async (req, res) => {
-    try{
+], async (req, res) => {
+    try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({ errors: errors.array() });
         }
-        
+
         const result = await eventModel.createEventTest(req.body);
         res.status(201).json(result);
     } catch (err) {
         console.error('Database error:', err);
-        return res.status(500).json({error: 'Failed to execute query'});
+        return res.status(500).json({ error: 'Failed to execute query' });
     }
 });
 

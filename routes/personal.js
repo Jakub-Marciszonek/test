@@ -15,8 +15,8 @@ router.get('/', [
     query('results').optional().isInt({ min: 1, max: 1000 }).toInt(),
     query('from').optional().isDate({ format: 'YYYY-MM-DD' }),
     query('to').optional().isDate({ format: 'YYYY-MM-DD' })
-],async (req, res) => {// for now it's usin client name and id
-    try{
+], async (req, res) => {// for now it's usin client name and id
+    try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({ errors: errors.array() });
@@ -24,7 +24,7 @@ router.get('/', [
         console.log('Get Personal starting');
 
         const clientId = req.query.clientId // clientId required to use api
-       
+
         const results = req.query.results || 250; // results is number of results in api
         const from = req.query.from; // Format YYYY-MM-DD
         const to = req.query.to; // Format YYYY-MM-DD
@@ -35,12 +35,12 @@ router.get('/', [
         where.push('Clients.clientId = ?'); // clientId is required for this api
 
         if (from) {
-        where.push('Events.eventDate >= ?');
-        params.push(from);
+            where.push('Events.eventDate >= ?');
+            params.push(from);
         }
         if (to) {
-        where.push('Events.eventDate <= ?');
-        params.push(to);
+            where.push('Events.eventDate <= ?');
+            params.push(to);
         }
 
         const whereClause = where.length ? 'WHERE ' + where.join(' AND ') : '';
@@ -59,9 +59,9 @@ router.get('/', [
 
         const rows = await db.all(query, params);
         res.json(rows);
-        } catch (err) {
-            console.error('Error executing query:', err);
-            return res.status(500).send('Server error');
+    } catch (err) {
+        console.error('Error executing query:', err);
+        return res.status(500).send('Server error');
     }
 });
 

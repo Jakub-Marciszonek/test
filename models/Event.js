@@ -1,12 +1,12 @@
 // Description: Event model for managing events in the database
 class EventModel {
     // Constructor to initialize the database connection
-  constructor(db) { this.db = db; }
+    constructor(db) { this.db = db; }
 
     // Method to retrieve events based on optional query parameters
     async getEvents({ limit = 250, from, to }) {
-    //                        ^^^
-    //                     30days*8h=240h
+        //                        ^^^
+        //                     30days*8h=240h
         let where = [];
         let params = [];
 
@@ -62,7 +62,7 @@ class EventModel {
         const query = `
         INSERT INTO Events (eventName, eventDate, startTime, endTime)
             VALUES (?, ?, ?, ?)`;
-        
+
         const params = [
             eventName, eventDate, startTime, endTime
         ];
