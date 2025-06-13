@@ -11,7 +11,7 @@ module.exports = (sequelize) => {
     },
     clientId: {
       type: DataTypes.INTEGER,
-      allowNull: true,
+      allowNull: false,
       references: {
         model: 'Clients', // table name
         key: 'clientId'
@@ -19,7 +19,7 @@ module.exports = (sequelize) => {
     },
     coachId: {
       type: DataTypes.INTEGER,
-      allowNull: true,
+      allowNull: false,
       references: {
         model: 'Coaches',
         key: 'coachId'
@@ -27,7 +27,7 @@ module.exports = (sequelize) => {
     },
     serviceId: {
       type: DataTypes.INTEGER,
-      allowNull: true,
+      allowNull: false,
       references: {
         model: 'Services',
         key: 'serviceId'
@@ -46,11 +46,11 @@ module.exports = (sequelize) => {
       allowNull: false
     },
     startTime: {
-      type: DataTypes.TIME,
+      type: DataTypes.TIME,// TIME format is HH:MM:SS
       allowNull: false
     },
     endTime: {
-      type: DataTypes.TIME,
+      type: DataTypes.TIME,// TIME format is HH:MM:SS
       allowNull: false
     },
     attachments: {
@@ -59,7 +59,7 @@ module.exports = (sequelize) => {
     },
     attendance: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
       defaultValue: 0,
       validate: {
         isIn: [[0, 1]]

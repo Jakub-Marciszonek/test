@@ -1,3 +1,6 @@
+const { Sequelize } = require('sequelize');
+const sequelize = new Sequelize(); // Sequlize(your database connection string)
+
 const Client = require('./client')(sequelize);//doesn't exist yet
 const Coach = require('./coach')(sequelize);//doesn't exist yet
 const Service = require('./service')(sequelize);//doesn't exist yet
