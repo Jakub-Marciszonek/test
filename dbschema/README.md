@@ -1,2 +1,1 @@
-![Database Schema](dbschema/DBsDraft.png)
-
+![Database Schema](https://raw.githubusercontent.com/Jakub-Marciszonek/test/main/dbschema/DBsDraft.png)
