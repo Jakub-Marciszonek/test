@@ -1,8 +1,9 @@
 const express = require('express');
-const eventController = require('../controllers/eventControllerSeq.js');
+const eventController = require('../controllers/eventController.js');
 const { createFilterValidation } = require('../middlewares/APIfiltersValidation.js');
 const { createEventValidation } = require('../middlewares/eventValidation.js');
 const validate = require('../middlewares/validate.js');
+const EventModel = require('..models/event.js');
 
 const router = express.Router();
 

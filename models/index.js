@@ -4,7 +4,7 @@ const sequelize = new Sequelize(); // Sequlize(your database connection string)
 const Client = require('./client')(sequelize);//doesn't exist yet
 const Coach = require('./coach')(sequelize);//doesn't exist yet
 const Service = require('./service')(sequelize);//doesn't exist yet
-const Event = require('./EventSeq')(sequelize);
+const Event = require('./Event')(sequelize);
 
 // belongsTo associations means that the Event model has foreign keys that reference 
 // the primary keys of the Client, Coach, and Service models.

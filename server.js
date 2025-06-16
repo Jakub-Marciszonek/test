@@ -1,7 +1,6 @@
 require('dotenv').config();
 const express = require('express');
-const { Database } = require('sqlite-async');
-console.log(Database);
+const sequelize = require('./database.js'); // Import the database connection
 const { router: eventsRouter, setDb: setEventDb } = require('./routes/events.js');
 
 const { router: personalRouter, setDb: setPersonalDb } = require('./routes/personal.js');
@@ -12,13 +11,13 @@ const port = process.env.PORT || 3000;
 
 app.use(express.json());
 
-let db;
-
 (async function () {
     try {
-        db = await Database.open(process.env.DB_PATH);
-        setEventDb(db); // Set the database instance for the events router
-        setPersonalDb(db);
+        await sequelize.authenticate(); // Test connection to the database
+        await sequelize.sync(); // Sync models with the database
+        setEventDb(sequelize); // Pass the sequelize instance to router
+        setPersonalDb(sequelize);
+
         console.log('Connected to SQLite database');
 
         // Set up routes
