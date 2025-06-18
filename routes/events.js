@@ -3,7 +3,10 @@ const eventController = require('../controllers/eventController.js');
 const { createFilterValidation } = require('../middlewares/APIfiltersValidation.js');
 const { createEventValidation } = require('../middlewares/eventValidation.js');
 const validate = require('../middlewares/validate.js');
-const EventModel = require('..models/event.js');
+const EventModel = require('../models/event.js')
+
+const { body } = require('express-validator');
+// its used only by the test endpoint #temporary
 
 const router = express.Router();
 
@@ -13,7 +16,8 @@ let db;
 let eventModel;
 function setDb(database) {
     db = database;
-    eventModel = new EventModel(db);
+    eventModel = EventModel(db);// eventModel is set to be assignet as event models:
+//                                  models/event.js
 }
 
 // ### Passive API for default render ###

@@ -1,11 +1,13 @@
 require('dotenv').config();
 const express = require('express');
-const sequelize = require('./database.js'); // Import the database connection
+
+const { sequelize } = require('./models');
 const { router: eventsRouter, setDb: setEventDb } = require('./routes/events.js');
 
 const { router: personalRouter, setDb: setPersonalDb } = require('./routes/personal.js');
 //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 // placeholder for the secound router presumambly personal api is going to be in events.js
+
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -25,11 +27,15 @@ app.use(express.json());
         app.use('/personal', personalRouter);
 
         //Helath check endpoint
-        app.get('/health', (req, res) => {
-            res.status(db ? 200 : 503).json({
-                database: db ? 'connected' : 'disconnected'
-            });
+        app.get('/health', async (req, res) => {
+            try {
+                await sequelize.authenticate();
+                res.status(200).json({ database: 'connected' });
+            } catch (err) {
+                res.status(503).json({ database: 'disconnected', error: err.message });
+            }
         });
+
 
         app.listen(port, () => {
             console.log(`Server running on port http://localhost:${port}`);

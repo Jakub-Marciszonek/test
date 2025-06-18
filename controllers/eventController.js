@@ -1,8 +1,8 @@
 const { Event, Coach } = require('../models/index.js');
-const buildFilters = require('../middlewares/APIfilters.js')// from, to, limit filters
+const buildFilters = require('../utilities/buildFilters.js')// from, to, limit filters
 const eventService = require('../services/eventService.js');// for buissnes logic
 
-exports.getEvent = async (req, res, eventModel) => {
+async function getEvent (req, res, eventModel) {
   try {
     const { where, limit } = buildFilters(req.query);
 
@@ -19,12 +19,12 @@ exports.getEvent = async (req, res, eventModel) => {
   }
 };
 
-exports.createEvent = async (req, res) => {
+async function createEvent (req, res, eventModel) {
   try {
     const { eventDate, startTime } = req.body;
     eventService.twoHNotice(eventDate, startTime);
 
-    const event = await Event.create(req.body);
+    const event = await eventModel.create(req.body);
     res.status(201).json(event);
   } catch (err) {
     if (err.message.includes('two-hour notice')) {
@@ -34,3 +34,8 @@ exports.createEvent = async (req, res) => {
     res.status(500).json({ error: 'Failed to create event' });
   }
 };
+
+module.exports = {
+  getEvent,
+  createEvent
+}

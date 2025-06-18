@@ -1,15 +1,15 @@
-const { body } = require('express-validator');
+const { query } = require('express-validator');
 
 exports.createFilterValidation = [
-    body('from')
+    query('from')
         .optional()
         .isDate({ format: 'YYYY-MM-DD' })
         .withMessage('"From" must be a valid date (YYYY-MM-DD)'),
-    body('to')
+    query('to')
         .optional()
         .isDate({ format: 'YYYY-MM-DD' })
         .withMessage('"To" must be a valid date (YYYY-MM-DD)'),
-    body('results')
+    query('results')
         .optional()
         .isInt({ min: 1, max: 1000 })
         .toInt()

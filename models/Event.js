@@ -14,7 +14,7 @@ module.exports = (sequelize) => {
       allowNull: false,
       references: {
         model: 'Clients', // table name
-        key: 'clientId'
+        key: 'clienId'
       }
     },
     coachId: {
@@ -34,11 +34,15 @@ module.exports = (sequelize) => {
       }
     },
     eventName: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(100),
       allowNull: false
     },
     eventDescription: {
-      type: DataTypes.TEXT,
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    eventNote: {
+      type: DataTypes.STRING(255),
       allowNull: true
     },
     eventDate: {
@@ -53,28 +57,30 @@ module.exports = (sequelize) => {
       type: DataTypes.TIME,// TIME format is HH:MM:SS
       allowNull: false
     },
-    attachments: {
-      type: DataTypes.STRING,
+    eventAttendance: {
+      type: DataTypes.ENUM('Present', 'Not present'),
+      allowNull: true,
+      defaultValue: 'Present',
+    },
+    eventAttachments: {
+      type: DataTypes.STRING(255),
       allowNull: true
     },
-    attendance: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      defaultValue: 0,
-      validate: {
-        isIn: [[0, 1]]
-      }
-    },
     eventLocation: {
-      type: DataTypes.STRING,
+      type: DataTypes.ENUM('On site', 'Online'),
       allowNull: false,
       defaultValue: 'On site'
-    }
+    },
+    eventCreatedAt: {
+      type: DataTypes.DATE, // In DB its TIMESTAMP
+      allowNull: false,
+      defaultValue: DataTypes.NOW
+    },
   }, {
     sequelize,
     modelName: 'Event',
     tableName: 'Events',
-    timestamps: false // Set to true if createdAt/updatedAt columns exist
+    timestamps: false
   });
 
   return Event;
