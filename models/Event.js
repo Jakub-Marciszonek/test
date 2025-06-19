@@ -14,7 +14,7 @@ module.exports = (sequelize) => {
       allowNull: false,
       references: {
         model: 'Clients', // table name
-        key: 'clienId'
+        key: 'clientId'
       }
     },
     coachId: {
@@ -67,9 +67,9 @@ module.exports = (sequelize) => {
       allowNull: true
     },
     eventLocation: {
-      type: DataTypes.ENUM('On site', 'Online'),
+      type: DataTypes.ENUM('On-site', 'Online'),
       allowNull: false,
-      defaultValue: 'On site'
+      defaultValue: 'On-site'
     },
     eventCreatedAt: {
       type: DataTypes.DATE, // In DB its TIMESTAMP

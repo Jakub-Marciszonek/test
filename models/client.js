@@ -4,7 +4,7 @@ module.exports = (sequelize) => {
   class Client extends Model {}
 
   Client.init({
-    cleintId: {
+    clientId: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       references: {
@@ -21,9 +21,9 @@ module.exports = (sequelize) => {
       }
     },
     clientStatus: {
-      type: DataTypes.ENUM('active', 'inactive'),
+      type: DataTypes.ENUM('Active', 'Inactive'),
       allowNull: false,
-      defaultValue: 'active'
+      defaultValue: 'Active'
     },
     clientName: {
         type: DataTypes.STRING(45),// in DB its VARCHAR
@@ -58,7 +58,7 @@ module.exports = (sequelize) => {
         type: DataTypes.ENUM('Female', 'Male', 'Other'),
         allowNull: true,
     },
-    clientAtachments: {
+    clientAttachments: {
         type: DataTypes.STRING(255),// in DB its VARCHAR
         allowNull: true
     },

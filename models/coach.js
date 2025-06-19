@@ -19,7 +19,7 @@ module.exports = (sequelize) => {
             type: DataTypes.STRING(45),
             allowNull: false,
         },        
-        coachPhoneNumber: {
+        coachPhone: {
             type: DataTypes.STRING(16),
             allowNull: true,
             unique: true, // Ensure phone number is unique

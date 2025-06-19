@@ -1,15 +1,36 @@
 const { Event, Coach } = require('../models/index.js');
 const buildFilters = require('../utilities/buildFilters.js')// from, to, limit filters
 const eventService = require('../services/eventService.js');// for buissnes logic
-
-async function getEvent (req, res, eventModel) {
+// This function retrieves all events with their associated coaches for admin view.
+async function getEventAdmin (req, res) {
   try {
     const { where, limit } = buildFilters(req.query);
 
     const events = await Event.findAll({
       where,
       limit: parseInt(limit),
-      include: [{ model: Coach }]
+      include: [{ model: Coach, 
+      }]
+    });
+
+    res.json(events);
+  } catch (err) {
+    console.error('Error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+// Defoult only necessary and public data
+async function getEvent (req, res) {
+  try {
+    const { where, limit } = buildFilters(req.query);
+
+    const events = await Event.findAll({
+      where,
+      limit: parseInt(limit),
+      attributes: ['eventId', 'eventDate', 'startTime', 'endTime'],//only time attributes
+      include: [{ model: Coach, 
+        attributes: ['coachId', 'coachName', 'coachSurname'] // only coach attributes
+      }]
     });
 
     res.json(events);
@@ -37,5 +58,6 @@ async function createEvent (req, res, eventModel) {
 
 module.exports = {
   getEvent,
+  getEventAdmin,
   createEvent
 }

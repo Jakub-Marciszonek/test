@@ -1,36 +1,46 @@
-require('dotenv').config();
-const { Sequelize } = require('sequelize');
+// Import all models
+const User = require('./user.js')(sequelize);
+const Coach = require('./coach.js')(sequelize);
+const Client = require('./client.js')(sequelize);
+const Organization = require('./organization.js')(sequelize);
+const Service = require('./service.js')(sequelize);
+const Event = require('./event.js')(sequelize);
 
-// Initialize Sequelize with environment variables for database connection
-// Ensure that the environment variables are set in your .env file
-const sequelize = new Sequelize(
-  process.env.DBNAME,
-  process.env.DBUSER,
-  process.env.DBPASSWORD,
-  {
-    host: process.env.DBHOST,
-    port: process.env.DBPORT,
-    dialect: process.env.DIALECT,
-    logging: false,
-  }
-);
+// Set up associations
 
-const Client = require('./client')(sequelize);//doesn't exist yet
-const Coach = require('./coach')(sequelize);//doesn't exist yet
-const Service = require('./service')(sequelize);//doesn't exist yet
-const Event = require('./event')(sequelize);
+// User associations
+User.hasOne(Coach, { foreignKey: 'coachId' });
+User.hasOne(Client, { foreignKey: 'clientId' });
+User.hasOne(Organization, { foreignKey: 'organizationsId' });
 
-// belongsTo associations means that the Event model has foreign keys that reference 
-// the primary keys of the Client, Coach, and Service models.
-// This allows Sequelize to understand the relationships between these models.
+// Coach associations
+Coach.belongsTo(User, { foreignKey: 'coachId' });
+Coach.hasMany(Event, { foreignKey: 'coachId' });
+
+// Client associations
+Client.belongsTo(User, { foreignKey: 'clientId' });
+Client.belongsTo(Organization, { foreignKey: 'organizationId' });
+Client.hasMany(Event, { foreignKey: 'clientId' });
+
+// Organization associations
+Organization.belongsTo(User, { foreignKey: 'organizationsId' });
+Organization.hasMany(Client, { foreignKey: 'organizationId' });
+
+// Service associations
+Service.hasMany(Event, { foreignKey: 'serviceId' });
+
+// Event associations
 Event.belongsTo(Client, { foreignKey: 'clientId' });
 Event.belongsTo(Coach, { foreignKey: 'coachId' });
 Event.belongsTo(Service, { foreignKey: 'serviceId' });
 
-// hasmany associations mean that the Client, Coach, and Service models can have multiple 
-// Events associated with them.
-Client.hasMany(Event, { foreignKey: 'clientId' });
-Coach.hasMany(Event, { foreignKey: 'coachId' });
-Service.hasMany(Event, { foreignKey: 'serviceId' });
-
-module.exports = { sequelize, Client, Coach, Service, Event };
+// Export models and sequelize instance
+module.exports = {
+  sequelize,
+  User,
+  Coach,
+  Client,
+  Organization,
+  Service,
+  Event,
+};

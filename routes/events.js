@@ -30,6 +30,13 @@ router.get('/', [
     await eventController.getEvent(req, res, eventModel);
 });
 
+router.get('/getall', [
+    createFilterValidation,
+    validate
+], async (req, res) => {
+    await eventController.getEventAdmin(req, res, eventModel);
+});
+
 
 // ----------- Post API for adding events -----------
 router.post('/post', createEventValidation, validate, async (req, res) => {
