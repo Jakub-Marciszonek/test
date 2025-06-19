@@ -1,10 +1,27 @@
+require('dotenv').config();
+const { Sequelize } = require('sequelize');
+
+// Initialize Sequelize with environment variables for database connection
+// Ensure that the environment variables are set in your .env file
+const sequelize = new Sequelize(
+  process.env.DBNAME,
+  process.env.DBUSER,
+  process.env.DBPASSWORD,
+  {
+    host: process.env.DBHOST,
+    port: process.env.DBPORT,
+    dialect: process.env.DIALECT,
+    logging: false,
+  }
+);
+
 // Import all models
-const User = require('./user.js')(sequelize);
-const Coach = require('./coach.js')(sequelize);
-const Client = require('./client.js')(sequelize);
-const Organization = require('./organization.js')(sequelize);
-const Service = require('./service.js')(sequelize);
-const Event = require('./event.js')(sequelize);
+const User = require('./user')(sequelize);
+const Coach = require('./coach')(sequelize);
+const Client = require('./client')(sequelize);
+const Organization = require('./organization')(sequelize);
+const Service = require('./service')(sequelize);
+const Event = require('./event')(sequelize);
 
 // Set up associations
 
