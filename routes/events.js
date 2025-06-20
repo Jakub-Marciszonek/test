@@ -1,8 +1,12 @@
 const express = require('express');
 const eventController = require('../controllers/eventController.js');
-const { createFilterValidation } = require('../middlewares/APIfiltersValidation.js');
+
+const { createEventLimiter } = require('../middlewares/rateLimiters');
+const { dateRangeValidation, limitValidation, idValidation }
+= require('../middlewares/APIfiltersValidation.js');
 const { createEventValidation } = require('../middlewares/eventValidation.js');
 const validate = require('../middlewares/validate.js');
+
 const EventModel = require('../models/event.js')
 
 const { body } = require('express-validator');
@@ -24,25 +28,38 @@ function setDb(database) {
 // Event to be displayed does have to not have empty:
 // eventId, eventName, eventDate, startTime, EndTime, coachId
 router.get('/', [
-    createFilterValidation,
+    ...dateRangeValidation,
+    ...limitValidation,
     validate
 ], async (req, res) => {
     await eventController.getEvent(req, res, eventModel);
 });
 
 router.get('/getall', [
-    createFilterValidation,
+    ...dateRangeValidation,
+    ...limitValidation,
     validate
 ], async (req, res) => {
     await eventController.getEventAdmin(req, res, eventModel);
 });
 
+router.get('/personal', [
+    ...dateRangeValidation,
+    ...limitValidation,
+    ...idValidation,
+    validate
+], async (req, res) => {
+    await eventController.getEventPersonal(req, res, eventModel);
+});
 
 // ----------- Post API for adding events -----------
-router.post('/post', createEventValidation, validate, async (req, res) => {
-
-    // send query parameters to controller
-    eventController.createEvent(req, res, eventModel);
+router.post('/post',createEventLimiter, createEventValidation(), validate, async (req, res) => {
+    try {
+        // send query parameters to controller
+        await eventController.createEvent(req, res, eventModel);
+    } catch (err) {
+        return res.status(500).json({ error: 'Unexpected server error' });
+    }
 });
 
 // ----------- simplify post api for testing -----------

@@ -1,17 +1,24 @@
 require('dotenv').config();
+
 const express = require('express');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+
+const port = process.env.PORT || 3000;
 
 const { sequelize } = require('./models');
 const { router: eventsRouter, setDb: setEventDb } = require('./routes/events.js');
-
 const { router: personalRouter, setDb: setPersonalDb } = require('./routes/personal.js');
 //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-// placeholder for the secound router presumambly personal api is going to be in events.js
+// placeholder for the secound router  personal api is in events.js
+const { generalLimiter } = require('./middlewares/rateLimiters.js');
 
 const app = express();
-const port = process.env.PORT || 3000;
 
-app.use(express.json());
+app.use(helmet());
+app.use(generalLimiter);
+app.use(express.json({ limit: '10kb' }));
+app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
 (async function () {
     try {

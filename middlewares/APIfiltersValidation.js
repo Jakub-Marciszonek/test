@@ -1,6 +1,6 @@
 const { query } = require('express-validator');
 
-exports.createFilterValidation = [
+const dateRangeValidation = [
     query('from')
         .optional()
         .isDate({ format: 'YYYY-MM-DD' })
@@ -8,10 +8,24 @@ exports.createFilterValidation = [
     query('to')
         .optional()
         .isDate({ format: 'YYYY-MM-DD' })
-        .withMessage('"To" must be a valid date (YYYY-MM-DD)'),
-    query('results')
+        .withMessage('"To" must be a valid date (YYYY-MM-DD)')
+];
+
+const limitValidation = [
+    query('limit')
         .optional()
-        .isInt({ min: 1, max: 1000 })
+        .isInt({ min:1 })
         .toInt()
-        .withMessage('"Results" must be an integer between 1 and 1000'),
-]
+        .withMessage('"limit" must be an positive integer'),
+];
+
+const idValidation = [
+    query('Id')
+        .optional()
+        .isInt({min: 1})
+        .withMessage('"Id" must be a positive integer'),
+];
+
+module.exports = {
+    dateRangeValidation, limitValidation, idValidation
+};

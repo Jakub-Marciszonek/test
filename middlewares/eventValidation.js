@@ -13,13 +13,13 @@ function createEventValidation() {
 
         body('startTime')
             .notEmpty().withMessage('Start time is required')
-            .matches(/^([0-1]\d|2[0-3]):([0-5]\d):([0-5]\d)$/)
-            .withMessage('Start time must be in HH:mm:ss format'),
+            .matches(/^([0-9]|1\d|2[0-3]):([0-5]\d)$/)
+            .withMessage('Start time must be in HH:mm or H:mm format'),
 
         body('endTime')
             .notEmpty().withMessage('End time is required')
-            .matches(/^([0-1]\d|2[0-3]):([0-5]\d):([0-5]\d)$/)
-            .withMessage('End time must be in HH:mm:ss format'),
+            .matches(/^([0-9]|1\d|2[0-3]):([0-5]\d)$/)
+            .withMessage('End time must be in HH:mm or H:mm format'),
 
         body('clientId')
             .notEmpty().withMessage('Client ID is required')

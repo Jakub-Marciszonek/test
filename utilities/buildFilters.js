@@ -1,7 +1,7 @@
 const { Op } = require('sequelize');
 
-function buildFilters(query) {
-    const {from, to, limit = 250 } = query;
+function buildRange(query) {
+    const {from, to } = query;
     const where = {};
 
     if (from || to) {
@@ -11,9 +11,15 @@ function buildFilters(query) {
     }
 
     return {
-        where,
-        limit: parseInt(limit, 10)
+        where
     };
 }
 
-module.exports = buildFilters;
+function buildLimit(query) {
+// If limit is provided, use it, else it's 250
+    return query.limit !== undefined ? query.limit : 250;
+}
+
+module.exports = {
+    buildRange, buildLimit
+};

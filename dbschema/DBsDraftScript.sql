@@ -60,16 +60,16 @@ ENGINE = InnoDB;
 -- Table `CoollaCalendar`.`Organizations`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `CoollaCalendar`.`Organizations` (
-  `organizationsId` INT NOT NULL AUTO_INCREMENT,
+  `organizationId` INT NOT NULL AUTO_INCREMENT,
   `organizationName` VARCHAR(100) NOT NULL,
   `organizationEmail` VARCHAR(45) NULL,
   `organizationPhone` VARCHAR(45) NULL,
   `prefferedContact` ENUM('Email', 'Phone') NULL,
-  `organizationAdress` VARCHAR(100) NOT NULL,
-  PRIMARY KEY (`organizationsId`),
+  `organizationAdress` VARCHAR(100) NULL,
+  PRIMARY KEY (`organizationId`),
   UNIQUE INDEX `organizationName_UNIQUE` (`organizationName` ASC),
   CONSTRAINT `fk_user_organization`
-    FOREIGN KEY (`organizationsId`)
+    FOREIGN KEY (`organizationId`)
     REFERENCES `CoollaCalendar`.`Users` (`userId`)
     ON DELETE CASCADE
     ON UPDATE RESTRICT)
@@ -81,7 +81,7 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `CoollaCalendar`.`Clients` (
   `clientId` INT NOT NULL,
-  `organizationId` INT NOT NULL DEFAULT 1,
+  `organizationId` INT NULL,
   `clientStatus` ENUM('Active', 'Inactive') NOT NULL DEFAULT 'Active',
   `clientName` VARCHAR(45) NOT NULL,
   `clientSurname` VARCHAR(45) NULL,
@@ -99,7 +99,7 @@ CREATE TABLE IF NOT EXISTS `CoollaCalendar`.`Clients` (
   UNIQUE INDEX `clientEmail_UNIQUE` (`clientEmail` ASC),
   CONSTRAINT `fk_clients_organization`
     FOREIGN KEY (`organizationId`)
-    REFERENCES `CoollaCalendar`.`Organizations` (`organizationsId`)
+    REFERENCES `CoollaCalendar`.`Organizations` (`organizationId`)
     ON DELETE CASCADE
     ON UPDATE RESTRICT,
   CONSTRAINT `fk_client_user`
