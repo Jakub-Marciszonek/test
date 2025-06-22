@@ -69,27 +69,27 @@ router.get('/admin', [
 
 // ----------- Post API for adding events as client -----------
 // after login wall
-router.post('/post/:clientid', createEventLimiter,
+router.post('/client/post/:clientid', createEventLimiter,
 idParamsValidation('clientid'), createEventValidation(), validate,
 async (req, res) => {
     try {
         // send query parameters to controller
         await eventController.createEvent(req, res, eventModel);
     } catch (err) {
-        return res.status(500).json({ error: 'Unexpected server error' });
+        return res.status(500).json({ error: err });
     }
 });
 
 // ----------- Post API for adding events as coach -----------
 // after login wall
-router.post('/post/coach/:coachid', createEventLimiter, 
+router.post('/coach/post/:coachid', createEventLimiter, 
 idParamsValidation('coachid'), createEventValidation(), validate, 
 async (req, res) => {
     try {
         // send query parameters to controller
         await eventController.createEventAsCoach(req, res, eventModel);
     } catch (err) {
-        return res.status(500).json({ error: 'Unexpected server error' });
+        return res.status(500).json({ error: err });
     }
 });
 
@@ -100,28 +100,37 @@ async (req, res) => {
     try {
         await eventController.createEventAsAdmin(req, res, eventModel);
     } catch (err) {
-        return res.status(500).json({ error: 'Unexpected server error' });
+        return res.status(500).json({ error: err });
     }
 });
 
-router.patch('/edit/:eventid', createEventLimiter, idParamsValidation('eventid'),
+router.patch('/client/edit/:eventid', createEventLimiter, idParamsValidation('eventid'),
 patchEventValidation(), validate,
 async (req, res) => {
     try {
         await eventController.editEvent(req, res, eventModel);
     } catch (err) {   
-        return res.status(500).json({ error: 'Unexpected server error'})
+        return res.status(500).json({ error: err})
     }
 });
 
-router.patch('/edit/coach/:eventid', createEventLimiter, idParamsValidation('eventid'),
+router.patch('/coach/edit/:eventid', createEventLimiter, idParamsValidation('eventid'),
 patchEventValidation(), validate,
 async (req, res) => {
     try {
         await eventController.editEventAsCoach(req, res, eventModel);
     } catch (err) {
-        console.error('Error updating event:', err);
-        return res.status(500).json({ error: 'Unexpected server error'})
+        return res.status(500).json({ error: err})
+    }
+});
+
+router.patch('/admin/edit/:eventid', createEventLimiter, idParamsValidation('eventid'),
+patchEventValidation(), validate,
+async (req, res) => {
+    try {
+        await eventController.editEventAsAdmin(req, res, eventModel);
+    } catch {
+        return res.status(500).json({ error: err })
     }
 });
 

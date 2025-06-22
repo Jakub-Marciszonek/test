@@ -130,6 +130,7 @@ async function getEventAdmin (req, res) {
 // client post api
 async function createEvent (req, res, eventModel) {
     try {
+
         const clientId = req.params.clientid;// its going to be get after authentication
         //  from middleware from login
         if (!clientId) {
@@ -140,6 +141,17 @@ async function createEvent (req, res, eventModel) {
         await eventService.twoHNotice(eventDate, startTime);
         //const event = await eventModel.create(req.body);
 
+/*
+        // --- Restrict editing to the event owner ---
+        const clientIdFromToken = req.user?.clientId;
+
+        if (event clientId !== clientIfFromToken) {
+            return res.status(403).json({
+                 error: 'You are not allowed to edit this event. '
+                });
+        }
+*/
+
         const eventData = {
             ...req.body, // all fields from the request body
             clientId: clientId // overwrite clientId from request params
@@ -147,12 +159,13 @@ async function createEvent (req, res, eventModel) {
 
         const eventPromise = eventModel.create(req.body);
         const event = await withTimeout(eventPromise, 5000, 'DB operation timed out');
+        
         return res.status(201).json(event);
     } catch (err) {
         if (err.name === 'SequelizeForeignKeyConstraintError') {
             return handleSequelizeForeignKeyError(err, res); 
         }
-        
+
         if (err.message.includes('two-hour notice')) {
             return res.status(400).json({error: err.message});
         }
@@ -173,6 +186,17 @@ async function createEventAsCoach (req, res, eventModel) {
         const { eventDate, startTime } = req.body;
         await eventService.twoHNotice(eventDate, startTime);
         //const event = await eventModel.create(req.body);
+
+/*
+        // --- Restrict editing to the event owner ---
+        const coachIdFromToken = req.user?.coachId;
+
+        if (event coachId !== coachIdFromToken) {
+            return res.status(403).json({
+                 error: 'You are not allowed to edit this event. '
+                });
+        }
+*/
 
         const eventData = {
             ...req.body, // all fields from the request body
@@ -233,6 +257,17 @@ async function editEvent (req, res, eventModel) {
         if (!event) {
             return res.status(404).json({ error: 'Event not found' });
         }
+/*
+        // --- Restrict editing to the event owner ---
+        const clientIdFromToken = req.user?.clientId;
+
+        if (event clientId !== clientIdfFromToken) {
+            return res.status(403).json({
+                 error: 'You are not allowed to edit this event. '
+                });
+        }
+*/
+        // -------------------------------------------
 
         await event.update(updates);
 
@@ -263,6 +298,17 @@ async function editEventAsCoach (req, res, eventModel) {
             return res.status(404).json({ error: 'Event not found' });
         }
 
+/*
+        // --- Restrict editing to the event owner ---
+        const coachIdFromToken = req.user?.coachId;
+
+        if (event coachId !== coachIfFromToken) {
+            return res.status(403).json({
+                 error: 'You are not allowed to edit this event. '
+                });
+        }
+*/
+
         await event.update(updates);
 
         res.json(event);
@@ -271,6 +317,30 @@ async function editEventAsCoach (req, res, eventModel) {
             return handleSequelizeForeignKeyError(err, res); 
         }
         return res.status(500).json({ error: err.message || 'Failed to change the event'});
+    }
+};
+
+async function editEventAsAdmin(req, res, eventModel) {
+    try {
+        const eventId = req.params.eventid;
+        const updates = req.body;
+
+        if('clientId' in updates && 'coachId' in updates) {
+            return res.status(400).json({
+                error: "You cannont update both clientId and coachId in the same request."
+            });
+        }
+        const event = await Event.findByPk(eventId);
+        if (!event) {
+            return res.status(404).json({ error: 'Event not found' });
+        }
+
+        await event.update(updates);
+    } catch (err) {
+        if (err.name === 'SequelizeForeignKeyConstraintError') {
+            return handleSequelizeForeignKeyError(err, res); 
+        }
+        return res.status(500).json({ error: err.message || 'Failed to change the event'});        
     }
 };
 
@@ -283,5 +353,6 @@ module.exports = {
   createEventAsCoach,
   createEventAsAdmin,
   editEvent,
-  editEventAsCoach
+  editEventAsCoach,
+  editEventAsAdmin
 }
