@@ -19,13 +19,20 @@ const limitValidation = [
         .withMessage('"limit" must be an positive integer'),
 ];
 
-const idValidation = [
-    query('Id')
-        .optional()
-        .isInt({min: 1})
-        .withMessage('"Id" must be a positive integer'),
-];
+//currently not used
+const { param } = require('express-validator');
+
+// Accepts any number of param names and returns validation chains
+function idParamsValidation(...paramNames) {
+// insert id names as many as neccesarry
+    return paramNames.map(name =>
+        param(name)
+            .isInt({ min: 1 })
+            .withMessage(`${name} must be a positive integer`)
+    );
+}
+
 
 module.exports = {
-    dateRangeValidation, limitValidation, idValidation
+    dateRangeValidation, limitValidation, idParamsValidation
 };

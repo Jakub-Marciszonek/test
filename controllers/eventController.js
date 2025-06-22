@@ -1,7 +1,11 @@
 const { Event, Coach } = require('../models/index.js');
 const {buildRange, buildLimit} = require('../utilities/buildFilters.js')// from, to filters
 const withTimeout = require('../utilities/timeout.js'); // for timeout handling
+const { handleSequelizeForeignKeyError } = require('../utilities/dbErrrorHandlers.js');
+// database error handling 
 const eventService = require('../services/eventService.js');// for buissnes logic
+const { filterUpdateFields, CLIENTPATCHWHITELIST, COACHPATCHWHITELIST}
+= require('../utilities/filterPatchFields.js');
 
 // Defoult only necessary and public data
 async function getEvent (req, res) {
@@ -12,9 +16,9 @@ async function getEvent (req, res) {
         const events = await Event.findAll({
         where,
         limit,
-        attributes: ['eventId', 'eventDate', 'startTime', 'endTime'],//only time attributes
+        attributes: ['eventDate', 'startTime', 'endTime'],//only time attributes
         include: [{ model: Coach, 
-            attributes: ['coachId', 'coachName', 'coachSurname']
+            attributes: ['coachName', 'coachSurname']
         }]
         });
 
@@ -24,6 +28,84 @@ async function getEvent (req, res) {
         res.status(500).json({ error: 'Server error' });
     }
     };
+
+// API after login
+async function getEventClient (req, res) {
+    try {
+        const { where } = buildRange(req.query);
+        const { limit } = buildLimit(req.query);
+        const clientId = req.params.clientid;// its going to be get after authentication
+        //  from middleware from login
+
+// Fetch all events
+        const events = await Event.findAll ({
+            where,
+            limit,
+            include: [{ model: Coach,
+            }],
+            raw: false,
+        });
+
+        const result = events.map(event => {
+            const eventData = event.get ? event.get({ plain: true }) : event;
+
+            if (clientId && String(eventData.clientId) === String(clientId)) {
+                return eventData;
+            } else {
+                return {
+                    eventName: eventData.eventName,
+                    eventDate: eventData.eventDate,
+                    coachName: eventData.Coach?.coachName,
+                    coachSurname: eventData.Coach?.coachSurname
+                };
+            }
+        });
+        
+        res.json(result);
+        } catch (err) {
+            console.error('Error:', err);
+            res.status(500).json({ error: 'Server error' });
+        }
+};
+
+// after login
+async function getEventCoach (req, res) {
+    try {
+        const { where } = buildRange(req.query);
+        const { limit } = buildLimit(req.query);
+        const coachId = req.params.coachid;// its going to be get after authentication
+        //  from middleware from login
+
+// Fetch all events
+        const events = await Event.findAll ({
+            where, 
+            limit,
+            include: [{ model: Coach,
+            }],
+            raw: false,
+        });
+
+        const result = events.map(event => {
+            const eventData = event.get ? event.get({ plain: true }) : event;
+
+            if (coachId && String(eventData.coachId) === String(coachId)) {
+                return eventData;
+            } else {
+                return {
+                    eventName: eventData.eventName,
+                    eventDate: eventData.eventDate,
+                    coachName: eventData.Coach?.coachName,
+                    coachSurname: eventData.Coach?.coachSurname
+                };
+            }
+        });
+        
+        res.json(result);
+        } catch (err) {
+            console.error('Error:', err);
+            res.status(500).json({ error: 'Server error' });
+        }
+};
 
 // This function retrieves all events with their associated coaches for admin view.
 async function getEventAdmin (req, res) {
@@ -45,64 +127,161 @@ async function getEventAdmin (req, res) {
     }
 };
 
-async function getEventPersonal (req, res) {
-    try {
-        const { where } = buildRange(req.query);
-        const { limit } = buildLimit(req.query);
-        const clientId = req.query.clientId;
-
-// Fetch all events
-        const events = await Event.findAll ({
-            where,
-            limit,
-            include: [{ model: Coach,
-            }],
-            raw: false,
-        });
-
-        const result = events.map(event => {
-            const eventData = event.get ? event.get({ plain: true }) : event;
-
-            if (clientId && String(eventData.clientId) === String(clientId)) {
-                return eventData;
-            } else {
-                return {
-                    eventId: eventData.eventId,
-                    eventName: eventData.eventName,
-                    eventDate: eventData.eventDate,
-                    coachName: eventData.Coach?.coachName,
-                    coachName: eventData.Coach?.coachSurname
-                };
-            }
-        });
-        
-        res.json(result);
-        } catch (err) {
-            console.error('Error:', err);
-            res.status(500).json({ error: 'Server error' });
-        }
-};
-
+// client post api
 async function createEvent (req, res, eventModel) {
     try {
+        const clientId = req.params.clientid;// its going to be get after authentication
+        //  from middleware from login
+        if (!clientId) {
+            return res.status(400).json({ error: 'Client ID is required' });
+        }
+
         const { eventDate, startTime } = req.body;
         await eventService.twoHNotice(eventDate, startTime);
         //const event = await eventModel.create(req.body);
+
+        const eventData = {
+            ...req.body, // all fields from the request body
+            clientId: clientId // overwrite clientId from request params
+        };
+
         const eventPromise = eventModel.create(req.body);
         const event = await withTimeout(eventPromise, 5000, 'DB operation timed out');
         return res.status(201).json(event);
     } catch (err) {
+        if (err.name === 'SequelizeForeignKeyConstraintError') {
+            return handleSequelizeForeignKeyError(err, res); 
+        }
+        
         if (err.message.includes('two-hour notice')) {
             return res.status(400).json({error: err.message});
         }
 
         return res.status(500).json({ error: err.message || 'Failed to create event' });
-  }
+    }
+};
+
+// coach post api
+async function createEventAsCoach (req, res, eventModel) {
+    try {
+        const coachId = req.params.coachid;// its going to be get after authentication
+        //  from middleware from login
+        if (!coachId) {
+            return res.status(400).json({ error: 'Coach ID is required' });
+        }
+
+        const { eventDate, startTime } = req.body;
+        await eventService.twoHNotice(eventDate, startTime);
+        //const event = await eventModel.create(req.body);
+
+        const eventData = {
+            ...req.body, // all fields from the request body
+            coachId: coachId // overwrite coachId from request params
+        };
+
+        const eventPromise = eventModel.create(req.body);
+        const event = await withTimeout(eventPromise, 5000, 'DB operation timed out');
+        return res.status(201).json(event);
+    } catch (err) {
+        if (err.name === 'SequelizeForeignKeyConstraintError') {
+            return handleSequelizeForeignKeyError(err, res); 
+        }        
+        if (err.message.includes('two-hour notice')) {
+            return res.status(400).json({ error: err.message });
+        }
+
+        return res.status(500).json({ error: err.message || 'Failed to create event' });
+    } 
+};
+
+async function createEventAsAdmin (req, res ,eventModel) {
+    try{
+        // place for admin athentification check code
+        const { eventDate, startTime } = req.body;
+        await eventService.twoHNotice(eventDate, startTime);
+
+        const eventPromise = eventModel.create(req.body);
+        const event = await withTimeout(eventPromise, 5000, 'DB operation timed out');
+        return res.status(201).json(event);
+    } catch (err) {
+        if (err.name === 'SequelizeForeignKeyConstraintError') {
+            return handleSequelizeForeignKeyError(err, res); 
+        }
+
+        if (err.message.includes('two-hour notice')) {
+            return res.status(400).json({error: err.message});
+        }
+
+        return res.status(500).json({ error: err.message || 'Failed to create event '});
+    }
+};
+
+// client edit api
+async function editEvent (req, res, eventModel) {
+    try {
+        const eventId = req.params.eventid; // for know i thing to acquire event id you need
+// access to the information about event eg ur own event as client or coach
+        const { updates, blocked } = filterUpdateFields(req.body, CLIENTPATCHWHITELIST);
+
+        if (blocked.length > 0) {
+            return res.status(400).json({
+                error: `The following field are not allowed to be updated: ${blocked.join(', ')}`
+            });
+        }
+
+        const event = await Event.findByPk(eventId);
+        if (!event) {
+            return res.status(404).json({ error: 'Event not found' });
+        }
+
+        await event.update(updates);
+
+        res.json(event);
+    } catch (err) {
+        if (err.name === 'SequelizeForeignKeyConstraintError') {
+            return handleSequelizeForeignKeyError(err, res); 
+        
+        }
+        return res.status(500).json({ error: err.message || 'Failed to change the event'});
+    }
+};
+
+async function editEventAsCoach (req, res, eventModel) {
+    try {
+        const eventId = req.params.eventid; // for know i thing to acquire event id you need
+// access to the information about event eg ur own event as client or coach
+        const { updates, blocked } = filterUpdateFields(req.body, COACHPATCHWHITELIST);
+
+        if (blocked.length > 0) {
+            return res.status(400).json({
+                error: `The following field are not allowed to be updated: ${blocked.join(', ')}`
+            });
+        }
+
+        const event = await Event.findByPk(eventId);
+        if (!event) {
+            return res.status(404).json({ error: 'Event not found' });
+        }
+
+        await event.update(updates);
+
+        res.json(event);
+    } catch (err) {
+        if (err.name === 'SequelizeForeignKeyConstraintError') {
+            return handleSequelizeForeignKeyError(err, res); 
+        }
+        return res.status(500).json({ error: err.message || 'Failed to change the event'});
+    }
 };
 
 module.exports = {
   getEvent,
+  getEventClient,
+  getEventCoach,
   getEventAdmin,
-  getEventPersonal,
-  createEvent
+  createEvent,
+  createEventAsCoach,
+  createEventAsAdmin,
+  editEvent,
+  editEventAsCoach
 }

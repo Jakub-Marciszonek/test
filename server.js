@@ -2,15 +2,13 @@ require('dotenv').config();
 
 const express = require('express');
 const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
 
 const port = process.env.PORT || 3000;
 
 const { sequelize } = require('./models');
-const { router: eventsRouter, setDb: setEventDb } = require('./routes/events.js');
-const { router: personalRouter, setDb: setPersonalDb } = require('./routes/personal.js');
-//^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-// placeholder for the secound router  personal api is in events.js
+const { router: clientRouter, setDb: setEventDb } = require('./routes/events.js');
+//const { router: userRouter, setDb: setUserDb } = require('./routes/users.js');
+// placeholder not exist yet ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 const { generalLimiter } = require('./middlewares/rateLimiters.js');
 
 const app = express();
@@ -25,13 +23,13 @@ app.use(express.urlencoded({ extended: true, limit: '10kb' }));
         await sequelize.authenticate(); // Test connection to the database
         await sequelize.sync(); // Sync models with the database
         setEventDb(sequelize); // Pass the sequelize instance to router
-        setPersonalDb(sequelize);
+//        setUserDb(sequelize);
 
         console.log('Connected to SQLite database');
 
         // Set up routes
-        app.use('/event', eventsRouter);
-        app.use('/personal', personalRouter);
+        app.use('/event', clientRouter);
+//        app.use('/user', userRouter);
 
         //Helath check endpoint
         app.get('/health', async (req, res) => {

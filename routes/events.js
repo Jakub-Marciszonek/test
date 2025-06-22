@@ -2,15 +2,15 @@ const express = require('express');
 const eventController = require('../controllers/eventController.js');
 
 const { createEventLimiter } = require('../middlewares/rateLimiters');
-const { dateRangeValidation, limitValidation, idValidation }
+const { dateRangeValidation, limitValidation, idParamsValidation }
 = require('../middlewares/APIfiltersValidation.js');
-const { createEventValidation } = require('../middlewares/eventValidation.js');
+
+const { createEventValidation, patchEventValidation } 
+= require('../middlewares/eventValidation.js');
+
 const validate = require('../middlewares/validate.js');
 
 const EventModel = require('../models/event.js')
-
-const { body } = require('express-validator');
-// its used only by the test endpoint #temporary
 
 const router = express.Router();
 
@@ -35,7 +35,31 @@ router.get('/', [
     await eventController.getEvent(req, res, eventModel);
 });
 
-router.get('/getall', [
+// ----------- Get API for client events -----------
+// after login wall
+// diplayes all events plus personal info
+// can be changed to display only personal events depends on the concept
+router.get('/client/:clientid', [
+    ...dateRangeValidation,
+    ...limitValidation,
+    ...idParamsValidation('clientid'),
+    validate
+], async (req, res) => {
+    await eventController.getEventClient(req, res, eventModel);
+});
+
+// ----------- Get API for coache events -----------
+router.get('/coach/:coachid', [
+    ...dateRangeValidation,
+    ...limitValidation,
+    idParamsValidation('coachid'),
+    validate
+], async (req, res) => {
+    await eventController.getEventCoach(req, res, eventModel);
+});
+
+// ----------- Get API for admin events -----------
+router.get('/admin', [
     ...dateRangeValidation,
     ...limitValidation,
     validate
@@ -43,17 +67,11 @@ router.get('/getall', [
     await eventController.getEventAdmin(req, res, eventModel);
 });
 
-router.get('/personal', [
-    ...dateRangeValidation,
-    ...limitValidation,
-    ...idValidation,
-    validate
-], async (req, res) => {
-    await eventController.getEventPersonal(req, res, eventModel);
-});
-
-// ----------- Post API for adding events -----------
-router.post('/post',createEventLimiter, createEventValidation(), validate, async (req, res) => {
+// ----------- Post API for adding events as client -----------
+// after login wall
+router.post('/post/:clientid', createEventLimiter,
+idParamsValidation('clientid'), createEventValidation(), validate,
+async (req, res) => {
     try {
         // send query parameters to controller
         await eventController.createEvent(req, res, eventModel);
@@ -62,23 +80,48 @@ router.post('/post',createEventLimiter, createEventValidation(), validate, async
     }
 });
 
-// ----------- simplify post api for testing -----------
-router.post('/test', [
-    body('eventName').notEmpty().withMessage('Event name is required'),
-    body('eventDate').notEmpty().isDate({ format: 'YYYY-MM-DD' }).withMessage(
-        'Event date is required and must be in YYYY-MM-DD format'),
-    body('startTime').notEmpty().matches(/^([01]\d|2[0-3]):([0-5]\d)$/).withMessage(
-        'Start time must be in HH:MM format'),
-    body('endTime').notEmpty().matches(/^([01]\d|2[0-3]):([0-5]\d)$/).withMessage(
-        'Start time must be in HH:MM format'),
-    validate
-], async (req, res) => {
+// ----------- Post API for adding events as coach -----------
+// after login wall
+router.post('/post/coach/:coachid', createEventLimiter, 
+idParamsValidation('coachid'), createEventValidation(), validate, 
+async (req, res) => {
     try {
-        const result = await eventModel.createEventTest(req.body);
-        res.status(201).json(result);
+        // send query parameters to controller
+        await eventController.createEventAsCoach(req, res, eventModel);
     } catch (err) {
-        console.error('Database error:', err);
-        return res.status(500).json({ error: 'Failed to execute query' });
+        return res.status(500).json({ error: 'Unexpected server error' });
+    }
+});
+
+// ----------- Post API for adding events as admin -----------
+// after login wall at least
+router.post('/admin/post', createEventLimiter, createEventValidation(), validate, 
+async (req, res) => {
+    try {
+        await eventController.createEventAsAdmin(req, res, eventModel);
+    } catch (err) {
+        return res.status(500).json({ error: 'Unexpected server error' });
+    }
+});
+
+router.patch('/edit/:eventid', createEventLimiter, idParamsValidation('eventid'),
+patchEventValidation(), validate,
+async (req, res) => {
+    try {
+        await eventController.editEvent(req, res, eventModel);
+    } catch (err) {   
+        return res.status(500).json({ error: 'Unexpected server error'})
+    }
+});
+
+router.patch('/edit/coach/:eventid', createEventLimiter, idParamsValidation('eventid'),
+patchEventValidation(), validate,
+async (req, res) => {
+    try {
+        await eventController.editEventAsCoach(req, res, eventModel);
+    } catch (err) {
+        console.error('Error updating event:', err);
+        return res.status(500).json({ error: 'Unexpected server error'})
     }
 });
 
