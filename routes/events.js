@@ -134,4 +134,31 @@ async (req, res) => {
     }
 });
 
+router.delete('/client/delete/:eventid', idParamsValidation('eventid'), validate,
+async (req, res) => {
+    try {
+        await eventController.deleteEvent (req, res, eventModel);
+    } catch {
+        return res.status(500).json({ error: err });
+    }
+});
+
+router.delete('/coach/delete/:eventid', idParamsValidation('eventid'), validate,
+async (req, res) => {
+    try {
+        await eventController.deleteEventAsCoach (req, res, eventModel);
+    } catch {
+        return res.status(500).json({ error: err });
+    }
+});
+
+router.delete('/admin/delete/:eventid', idParamsValidation('eventid'), validate,
+async (req, res) => {
+    try {
+        await eventController.deleteEventAsAdmin (req, res, eventModel);
+    } catch {
+        return res.status(500).json({ error: err });
+    }
+});
+
 module.exports = { router, setDb };

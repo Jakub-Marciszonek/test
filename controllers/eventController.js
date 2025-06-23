@@ -29,12 +29,13 @@ async function getEvent (req, res) {
     }
     };
 
-// API after login
 async function getEventClient (req, res) {
     try {
         const { where } = buildRange(req.query);
         const { limit } = buildLimit(req.query);
-        const clientId = req.params.clientid;// its going to be get after authentication
+        const clientId = req.params.clientid;
+        // const clietIdFromToken = req.user.?userId
+        // its going to be get after authentication
         //  from middleware from login
 
 // Fetch all events
@@ -73,7 +74,9 @@ async function getEventCoach (req, res) {
     try {
         const { where } = buildRange(req.query);
         const { limit } = buildLimit(req.query);
-        const coachId = req.params.coachid;// its going to be get after authentication
+        const coachId = req.params.coachid;
+        // const coachIdFromToken = req.user.?userId
+        // its going to be get after authentication
         //  from middleware from login
 
 // Fetch all events
@@ -130,8 +133,10 @@ async function getEventAdmin (req, res) {
 // client post api
 async function createEvent (req, res, eventModel) {
     try {
-
-        const clientId = req.params.clientid;// its going to be get after authentication
+        //const coachIdFromToken = req.user?.userId;
+        const clientId = req.params.clientid;
+        //const clientIdFromToken = req.user.?userId
+        // its going to be get after authentication
         //  from middleware from login
         if (!clientId) {
             return res.status(400).json({ error: 'Client ID is required' });
@@ -143,7 +148,6 @@ async function createEvent (req, res, eventModel) {
 
 /*
         // --- Restrict editing to the event owner ---
-        const clientIdFromToken = req.user?.clientId;
 
         if (event clientId !== clientIfFromToken) {
             return res.status(403).json({
@@ -177,6 +181,7 @@ async function createEvent (req, res, eventModel) {
 // coach post api
 async function createEventAsCoach (req, res, eventModel) {
     try {
+        //const coachIdFromToken = req.user?.userId;
         const coachId = req.params.coachid;// its going to be get after authentication
         //  from middleware from login
         if (!coachId) {
@@ -189,7 +194,6 @@ async function createEventAsCoach (req, res, eventModel) {
 
 /*
         // --- Restrict editing to the event owner ---
-        const coachIdFromToken = req.user?.coachId;
 
         if (event coachId !== coachIdFromToken) {
             return res.status(403).json({
@@ -243,6 +247,7 @@ async function createEventAsAdmin (req, res ,eventModel) {
 // client edit api
 async function editEvent (req, res, eventModel) {
     try {
+        //const coachIdFromToken = req.user?.userId;
         const eventId = req.params.eventid; // for know i thing to acquire event id you need
 // access to the information about event eg ur own event as client or coach
         const { updates, blocked } = filterUpdateFields(req.body, CLIENTPATCHWHITELIST);
@@ -259,7 +264,6 @@ async function editEvent (req, res, eventModel) {
         }
 /*
         // --- Restrict editing to the event owner ---
-        const clientIdFromToken = req.user?.clientId;
 
         if (event clientId !== clientIdfFromToken) {
             return res.status(403).json({
@@ -283,6 +287,7 @@ async function editEvent (req, res, eventModel) {
 
 async function editEventAsCoach (req, res, eventModel) {
     try {
+        //const coachIdFromToken = req.user?.userId;
         const eventId = req.params.eventid; // for know i thing to acquire event id you need
 // access to the information about event eg ur own event as client or coach
         const { updates, blocked } = filterUpdateFields(req.body, COACHPATCHWHITELIST);
@@ -300,7 +305,6 @@ async function editEventAsCoach (req, res, eventModel) {
 
 /*
         // --- Restrict editing to the event owner ---
-        const coachIdFromToken = req.user?.coachId;
 
         if (event coachId !== coachIfFromToken) {
             return res.status(403).json({
@@ -344,6 +348,70 @@ async function editEventAsAdmin(req, res, eventModel) {
     }
 };
 
+async function deleteEvent(req, res, eventModel) {
+    try {
+        const eventId = req.params.eventid;
+        // const clientIdFromToken = req.user.?userId
+        const event = await eventModel.findByPk(eventId);
+        if (!eventId) {
+            return res.status(404).json({ error: 'Event not found' });
+        }
+
+/*
+        if (event.clietId !== clietIdFromToken) {
+        return res.status(403).json({ error: 'You are not allowed to delete this event. });
+        }
+*/
+
+        await event.destroy();
+        
+        return res.json({ message: 'Event deleted successfully. '});
+    } catch (err) {
+        return res.status(500).json ({ error: err.message });
+    }
+};
+
+async function deleteEventAsCoach(req, res, eventModel) {
+    try {
+        const eventId = req.params.eventid;
+        // const coachIdFromToken = req.user.?userId
+        const event = await eventModel.findByPk(eventId);
+        if (!eventId) {
+            return res.status(404).json({ error: 'Event not found' });
+        }
+
+/*
+        if (event.coachId !== coachIdFromToken) {
+        return res.status(403).json({ error: 'You are not allowed to delete this event. });
+        }
+*/
+
+        await event.destroy();
+        
+        return res.json({ message: 'Event deleted successfully. '});
+    } catch (err) {
+        return res.status(500).json ({ error: err.message });
+    }
+};
+
+
+// after login
+async function deleteEventAsAdmin(req, res, eventModel) {
+    try {
+        const eventId = req.params.eventid;
+        const event = await eventModel.findByPk(eventId);
+        if (!event) {
+            return res.status(404).json({ error: 'Event not found' });
+        }
+
+        await event.destroy();
+        
+        return res.json({ message: 'Event deleted successfully. '});
+    } catch (err) {
+        return res.status(500).json ({ error: err.message });
+    }
+};
+
 module.exports = {
   getEvent,
   getEventClient,
@@ -354,5 +422,8 @@ module.exports = {
   createEventAsAdmin,
   editEvent,
   editEventAsCoach,
-  editEventAsAdmin
+  editEventAsAdmin,
+  deleteEvent,
+  deleteEventAsCoach,
+  deleteEventAsAdmin
 }

@@ -10,3 +10,8 @@ function twoHNotice(eventDate, startTime) {
 module.exports = {
   twoHNotice,
 };
+
+//usage example
+
+//  const { eventDate, startTime } = req.body;
+//  await eventService.twoHNotice(eventDate, startTime);
