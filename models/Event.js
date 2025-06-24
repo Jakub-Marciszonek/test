@@ -13,8 +13,8 @@ module.exports = (sequelize) => {
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: 'Clients', // table name
-        key: 'clientId'
+        model: 'Users', // table name
+        key: 'userId'
       }
     },
     coachId: {

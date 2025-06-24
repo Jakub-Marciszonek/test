@@ -7,7 +7,10 @@ module.exports = (sequelize) => {
     organizationsId: {
       type: DataTypes.INTEGER,
       primaryKey: true,
-      autoIncrement: true
+      references: {
+        model: 'Users', // table name
+        key: 'userId'
+      }
     },
     organizationName: {
       type: DataTypes.STRING(100),
