@@ -190,9 +190,9 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `CoollaCalendar`.`Specializatons`
+-- Table `CoollaCalendar`.`Specializations`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `CoollaCalendar`.`Specializatons` (
+CREATE TABLE IF NOT EXISTS `CoollaCalendar`.`Specializations` (
   `specializationId` INT NOT NULL AUTO_INCREMENT,
   `specializationName` VARCHAR(45) NULL,
   `specializationDescription` VARCHAR(255) NULL,
@@ -211,7 +211,7 @@ CREATE TABLE IF NOT EXISTS `CoollaCalendar`.`CoachSpecialization` (
   INDEX `specializationId_idx` (`specializationId` ASC),
   CONSTRAINT `fk_coach_specialization`
     FOREIGN KEY (`specializationId`)
-    REFERENCES `CoollaCalendar`.`Specializatons` (`specializationId`)
+    REFERENCES `CoollaCalendar`.`Specializations` (`specializationId`)
     ON DELETE CASCADE
     ON UPDATE RESTRICT,
   CONSTRAINT `fk_specialization_coach`
@@ -314,6 +314,8 @@ CREATE TABLE IF NOT EXISTS `CoollaCalendar`.`Transactions` (
   `transactionId` INT NOT NULL AUTO_INCREMENT,
   `serviceId` INT NOT NULL,
   `transactionTimestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `transactionName` VARCHAR(45) NOT NULL,
+  `transactionDescription` VARCHAR(255) NOT NULL,
   PRIMARY KEY (`transactionId`),
   INDEX `serviceId_idx` (`serviceId` ASC),
   CONSTRAINT `fk_transaction_service`
@@ -330,7 +332,7 @@ ENGINE = InnoDB;
 CREATE TABLE IF NOT EXISTS `CoollaCalendar`.`UserTransactions` (
   `userId` INT NOT NULL,
   `transactionId` INT NOT NULL,
-  PRIMARY KEY (`userId`),
+  PRIMARY KEY (`userId`, `transactionId`),
   INDEX `transactionId_idx` (`transactionId` ASC),
   CONSTRAINT `fk_transaction_client`
     FOREIGN KEY (`userId`)

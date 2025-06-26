@@ -21,11 +21,11 @@ module.exports = {
     await queryInterface.bulkInsert('Organizations', [
       {
         organizationsId: orgUsers[0].userId,
-        organizationName: 'Acme Corp',
-        organizationEmail: 'contact@acme.com',
+        organizationName: 'Doofenshmirtz Evil Inc',
+        organizationEmail: 'Doofenshmirtz@acme.com',
         organizationPhone: '+1234567890',
         prefferedContact: 'Email',
-        organizationAdress: '123 Main St'
+        organizationAdress: 'Tri-State Area'
       },
       {
         organizationsId: orgUsers[1].userId,
@@ -41,10 +41,10 @@ module.exports = {
     await queryInterface.bulkInsert('Coaches', [
       {
         coachId: coachUsers[0].userId,
-        coachName: 'Alice',
-        coachSurname: 'Smith',
+        coachName: 'Finn',
+        coachSurname: 'The human',
         coachPhone: '+1111111111',
-        coachEmail: 'alice.smith@example.com'
+        coachEmail: 'finn.hero@example.com'
       },
       {
         coachId: coachUsers[1].userId,
