@@ -238,10 +238,9 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `CoollaCalendar`.`UserRole` (
   `userId` INT NOT NULL,
-  `userType` ENUM('Coach', 'Client', 'Organization') NOT NULL,
   `roleId` INT NULL,
   `assigmentTime` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`userId`, `userType`),
+  PRIMARY KEY (`userId`),
   INDEX `roleId_idx` (`roleId` ASC),
   CONSTRAINT `fk_user_role`
     FOREIGN KEY (`roleId`)

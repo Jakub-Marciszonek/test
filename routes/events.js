@@ -1,3 +1,5 @@
+//~~~~~~~~~~~~~~~~~~~~~~ events routers ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 const express = require('express');
 const eventController = require('../controllers/eventController.js');
 

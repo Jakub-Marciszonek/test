@@ -7,8 +7,8 @@ const port = process.env.PORT || 3000;
 
 const { sequelize } = require('./models');
 const { router: clientRouter, setDb: setEventDb } = require('./routes/events.js');
-//const { router: userRouter, setDb: setUserDb } = require('./routes/users.js');
-// placeholder not exist yet ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+const { router: hourRouter, setDb: setHourDb } = require('./routes/workingHours.js');
+
 const { generalLimiter } = require('./middlewares/rateLimiters.js');
 
 const app = express();
@@ -23,13 +23,13 @@ app.use(express.urlencoded({ extended: true, limit: '10kb' }));
         await sequelize.authenticate(); // Test connection to the database
         await sequelize.sync(); // Sync models with the database
         setEventDb(sequelize); // Pass the sequelize instance to router
-//        setUserDb(sequelize);
+        setHourDb(sequelize);
 
         console.log('Connected to SQLite database');
 
         // Set up routes
         app.use('/event', clientRouter);
-//        app.use('/user', userRouter);
+        app.use('/hour', hourRouter);
 
         //Helath check endpoint
         app.get('/health', async (req, res) => {

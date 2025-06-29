@@ -7,35 +7,38 @@ module.exports = (sequelize) => {
     hoursId: {
       type: DataTypes.INTEGER,
       primaryKey: true,
-      autoIncrement: true
+      autoIncrement: true,
+      allowNull: false,
     },
     coachId: {
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: 'Coaches', // table name as string
-        key: 'coachId'
+        model: {
+          tableName: 'Coaches',
+          schema: 'CoollaCalendar',
+        },
+        key: 'coachId',
       },
       onDelete: 'CASCADE',
-      onUpdate: 'RESTRICT'
+      onUpdate: 'RESTRICT',
     },
     isOpen: {
       type: DataTypes.BOOLEAN,
-      allowNull: false
+      allowNull: false,
     },
     weekDay: {
       type: DataTypes.TINYINT,
-      allowNull: false
-      // 0 = Monday, 6 = Sunday (document your convention)
+      allowNull: false,
     },
     openTime: {
       type: DataTypes.TIME,
-      allowNull: true
+      allowNull: true,
     },
     closeTime: {
       type: DataTypes.TIME,
-      allowNull: true
-    }
+      allowNull: true,
+    },
   }, {
     sequelize,
     modelName: 'OperatingHours',
@@ -45,9 +48,14 @@ module.exports = (sequelize) => {
     indexes: [
       {
         unique: true,
-        fields: ['coachId', 'weekDay']
-      }
-    ]
+        fields: ['coachId', 'weekDay'],
+        name: 'unique_coach_weekday',
+      },
+      {
+        fields: ['coachId'],
+        name: 'coachId_idx',
+      },
+    ],
   });
 
   return OperatingHours;
