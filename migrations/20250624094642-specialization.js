@@ -21,16 +21,10 @@ module.exports = {
           allowNull: false
         }
       },
-      {
-        schema: 'CoollaCalendar'
-      }
     );
   },
 
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.dropTable({
-      tableName: 'Specializations',
-      schema: 'CoollaCalendar'
-    });
+    await queryInterface.dropTable('Specializations');
   }
 };

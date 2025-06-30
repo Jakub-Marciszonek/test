@@ -4,7 +4,7 @@ module.exports = {
   up: async (queryInterface, Sequelize) => {
     // Get Finn's coachId using his email
     const [coach] = await queryInterface.sequelize.query(
-      `SELECT "coachId" FROM "Coaches" WHERE "coachEmail" = 'finn.hero@example.com'`,
+      "SELECT coachId FROM Coaches WHERE coachEmail = 'finn.hero@example.com'",
       { type: Sequelize.QueryTypes.SELECT }
     );
 
@@ -21,7 +21,7 @@ module.exports = {
     }));
 
     return queryInterface.bulkInsert(
-      'CoollaCalendar.OperatingHours', 
+      { tableName: 'OperatingHours'},
       operatingHours
     );
   },
@@ -29,13 +29,13 @@ module.exports = {
   down: async (queryInterface, Sequelize) => {
     // Get Finn's coachId
     const [coach] = await queryInterface.sequelize.query(
-      `SELECT "coachId" FROM "Coaches" WHERE "coachEmail" = 'finn.hero@example.com'`,
+      "SELECT coachId FROM Coaches WHERE coachEmail = 'finn.hero@example.com'",
       { type: Sequelize.QueryTypes.SELECT }
     );
 
     if (coach) {
       return queryInterface.bulkDelete(
-        'CoollaCalendar.OperatingHours', 
+        { tableName: 'OperatingHours'},
         { coachId: coach.coachId }
       );
     }

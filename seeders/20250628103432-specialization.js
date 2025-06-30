@@ -1,68 +1,62 @@
-'use strict';
+const { QueryTypes } = require('sequelize');
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    // 1. Insert two specializations
+    // Insert specializations
     await queryInterface.bulkInsert('Specializations', [
-      {
-        specializationName: 'Mindfulness',
-        specializationDescription: 'Coaching focused on mindfulness and meditation.'
-      },
-      {
-        specializationName: 'Fitness',
-        specializationDescription: 'Coaching focused on physical fitness and training.'
-      }
+      { specializationName: 'Mindfulness', specializationDescription: 'Coaching focused on mindfulness and meditation.' },
+      { specializationName: 'Fitness', specializationDescription: 'Coaching focused on physical fitness and training.' }
     ]);
 
-    // 2. Get specialization IDs
-    const [specRows] = await queryInterface.sequelize.query(
-      `SELECT specializationId, specializationName FROM Specializations WHERE specializationName IN ('Mindfulness', 'Fitness')`
+    // Get specialization IDs
+    const specRows = await queryInterface.sequelize.query(
+      `SELECT specializationId, specializationName FROM Specializations WHERE specializationName IN ('Mindfulness', 'Fitness')`,
+      { type: QueryTypes.SELECT }
     );
     if (specRows.length !== 2) throw new Error('Specializations not found');
     const mindfulness = specRows.find(s => s.specializationName === 'Mindfulness');
     const fitness = specRows.find(s => s.specializationName === 'Fitness');
 
-    // 3. Get both coaches' IDs
-    const [coaches] = await queryInterface.sequelize.query(
-      `SELECT coachId, coachEmail FROM Coaches WHERE coachEmail IN ('finn.hero@example.com', 'bob.johnson@example.com')`
+    // Get coaches
+    const coaches = await queryInterface.sequelize.query(
+      `SELECT coachId, coachEmail FROM Coaches WHERE coachEmail IN ('finn.hero@example.com', 'bob.johnson@example.com')`,
+      { type: QueryTypes.SELECT }
     );
     if (coaches.length !== 2) throw new Error('One or both coaches not found');
     const finn = coaches.find(c => c.coachEmail === 'finn.hero@example.com');
     const bob = coaches.find(c => c.coachEmail === 'bob.johnson@example.com');
 
-    // 4. Link each coach to their specialization
-    await queryInterface.bulkInsert('CoachSpecializations', [
-      {
-        coachId: finn.coachId,
-        specializationId: mindfulness.specializationId
-      },
-      {
-        coachId: bob.coachId,
-        specializationId: fitness.specializationId
-      }
+    // Insert into CoachSpecializations (verify exact table name)
+    await queryInterface.bulkInsert('CoachSpecialization', [
+      { coachId: finn.coachId, specializationId: mindfulness.specializationId },
+      { coachId: bob.coachId, specializationId: fitness.specializationId }
     ]);
   },
 
   down: async (queryInterface, Sequelize) => {
-    // 1. Get specialization IDs
-    const [specRows] = await queryInterface.sequelize.query(
-      `SELECT specializationId FROM Specializations WHERE specializationName IN ('Mindfulness', 'Fitness')`
+    const specRows = await queryInterface.sequelize.query(
+      `SELECT specializationId FROM Specializations WHERE specializationName IN ('Mindfulness', 'Fitness')`,
+      { type: QueryTypes.SELECT }
     );
     const specIds = specRows.map(s => s.specializationId);
 
-    // 2. Get both coaches' IDs
-    const [coaches] = await queryInterface.sequelize.query(
-      `SELECT coachId FROM Coaches WHERE coachEmail IN ('finn.hero@example.com', 'bob.johnson@example.com')`
+    const coaches = await queryInterface.sequelize.query(
+      `SELECT coachId FROM Coaches WHERE coachEmail IN ('finn.hero@example.com', 'bob.johnson@example.com')`,
+      { type: QueryTypes.SELECT }
     );
     const coachIds = coaches.map(c => c.coachId);
 
-    // 3. Remove links from CoachSpecializations
-    await queryInterface.bulkDelete('CoachSpecializations', {
-      coachId: coachIds,
-      specializationId: specIds
-    });
+    // Delete exact pairs
+    for (const coachId of coachIds) {
+      for (const specId of specIds) {
+        await queryInterface.bulkDelete('CoachSpecializations', {
+          coachId,
+          specializationId: specId
+        });
+      }
+    }
 
-    // 4. Remove the specializations themselves
+    // Delete specializations
     await queryInterface.bulkDelete('Specializations', {
       specializationName: ['Mindfulness', 'Fitness']
     });

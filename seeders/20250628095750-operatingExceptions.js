@@ -2,56 +2,51 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    // Find Finn's coachId using his email (no double quotes)
-    const [coaches] = await queryInterface.sequelize.query(
-      `SELECT coachId FROM Coaches WHERE coachEmail = 'finn.hero@example.com'`
+    // First, get coach IDs for the coaches you want to assign exceptions to
+    const coaches = await queryInterface.sequelize.query(
+      `SELECT coachId, coachEmail FROM Coaches WHERE coachEmail IN ('finn.hero@example.com', 'bob.johnson@example.com')`,
+      { type: Sequelize.QueryTypes.SELECT }
     );
 
-    if (!coaches.length) throw new Error('Coach Finn not found');
-    const coachId = coaches[0].coachId;
+    if (coaches.length < 2) {
+      throw new Error('Required coaches not found for seeding OperatingExceptions');
+    }
 
-    // Create some exception days for Finn
+    const finn = coaches.find(c => c.coachEmail === 'finn.hero@example.com');
+    const bob = coaches.find(c => c.coachEmail === 'bob.johnson@example.com');
+
+    // Prepare seed data for OperatingExceptions
     const exceptions = [
       {
-        coachId,
+        coachId: bob.coachId,
         exceptionDate: '2025-12-25', // Christmas
         isOpen: false,
         openTime: '00:00:00',
         closeTime: '00:00:00',
-        exceptionDescription: 'Closed for holiday'
+        exceptionDescription: 'Christmas Day - Closed'
       },
       {
-        coachId,
-        exceptionDate: '2025-07-10', // Short day
+        coachId: finn.coachId,
+        exceptionDate: '2025-07-05',
         isOpen: true,
         openTime: '10:00:00',
         closeTime: '14:00:00',
-        exceptionDescription: 'Short day due to event'
-      },
-      {
-        coachId,
-        exceptionDate: '2025-07-15', // Open later
-        isOpen: true,
-        openTime: '12:00:00',
-        closeTime: '17:00:00',
-        exceptionDescription: 'Open later for personal reasons'
+        exceptionDescription: 'Shortened hours on July 5th'
       }
     ];
 
+    // Insert seed data
     await queryInterface.bulkInsert('OperatingExceptions', exceptions);
   },
 
   down: async (queryInterface, Sequelize) => {
-    // Find Finn's coachId
-    const [coaches] = await queryInterface.sequelize.query(
-      `SELECT coachId FROM Coaches WHERE coachEmail = 'finn.hero@example.com'`
-    );
-
-    if (coaches.length) {
-      await queryInterface.bulkDelete('OperatingExceptions', {
-        coachId: coaches[0].coachId,
-        exceptionDate: ['2025-12-25', '2025-07-10', '2025-07-15']
-      });
-    }
+    // Remove seeded exceptions by description or dates
+    await queryInterface.bulkDelete('OperatingExceptions', {
+      exceptionDescription: [
+        'Independence Day - Closed',
+        'Christmas Day - Closed',
+        'Shortened hours on July 5th'
+      ]
+    });
   }
 };

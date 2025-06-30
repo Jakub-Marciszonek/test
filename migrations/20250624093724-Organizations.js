@@ -13,7 +13,7 @@ module.exports = {
           model: 'Users', // referenced table name
           key: 'userId'   // referenced column name
         },
-        onUpdate: 'CASCADE',
+        onUpdate: 'RESTRICT',
         onDelete: 'CASCADE'
       },
       organizationName: {

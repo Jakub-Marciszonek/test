@@ -34,17 +34,11 @@ module.exports = {
           allowNull: false,
           defaultValue: Sequelize.NOW
         }
-      },
-      {
-        schema: 'CoollaCalendar'
       }
     );
   },
 
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.dropTable({
-      tableName: 'Transactions',
-      schema: 'CoollaCalendar'
-    });
+    await queryInterface.dropTable('Transactions');
   }
 };

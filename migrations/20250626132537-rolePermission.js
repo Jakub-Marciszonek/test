@@ -28,16 +28,10 @@ module.exports = {
           onUpdate: 'RESTRICT'
         }
       },
-      {
-        schema: 'CoollaCalendar'
-      }
     );
   },
 
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.dropTable({
-      tableName: 'RolePermission',
-      schema: 'CoollaCalendar'
-    });
+    await queryInterface.dropTable('RolePermission');
   }
 };

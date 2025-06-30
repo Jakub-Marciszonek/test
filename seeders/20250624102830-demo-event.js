@@ -5,7 +5,7 @@ module.exports = {
     await queryInterface.bulkInsert('Events', [
       {
         clientId: 1, // Must match an existing userId in Users table
-        coachId: 1,  // Must match an existing coachId in Coaches table
+        coachId: 3,  // Must match an existing coachId in Coaches table
         serviceId: 1, // Must match an existing serviceId in Services table
         eventName: 'Kickoff Meeting',
         eventDescription: 'Initial project kickoff with client and coach.',
@@ -20,7 +20,7 @@ module.exports = {
       },
       {
         clientId: 2,
-        coachId: 1,
+        coachId: 4,
         serviceId: 2,
         eventName: 'Nutrition Consultation',
         eventDescription: 'Discuss dietary plans.',

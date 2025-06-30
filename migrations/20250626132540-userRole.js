@@ -36,17 +36,11 @@ module.exports = {
           allowNull: true,
           defaultValue: Sequelize.NOW
         }
-      },
-      {
-        schema: 'CoollaCalendar'
       }
     );
   },
 
   down: async (queryInterface, Sequelize) => {
-    // Drop ENUM type before dropping the table to avoid type conflicts
-    await queryInterface.dropTable({
-      tableName: 'UserRole',
-      schema: 'CoollaCalendar'
-    });
-    await
+    await queryInterface.dropTable('UserRole');
+  }
+};

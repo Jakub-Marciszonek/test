@@ -3,9 +3,9 @@
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     await queryInterface.createTable(
-      'OperatingHours',
+      'OperatingExceptions',
       {
-        hoursId: {
+        exceptionId: {
           type: Sequelize.INTEGER,
           primaryKey: true,
           autoIncrement: true,
@@ -21,37 +21,33 @@ module.exports = {
           onDelete: 'CASCADE',
           onUpdate: 'RESTRICT'
         },
-        isOpen: {
-          type: Sequelize.BOOLEAN,
+        exceptionDate: {
+          type: Sequelize.DATEONLY,
           allowNull: false
         },
-        weekDay: {
-          type: Sequelize.TINYINT,
-          allowNull: false
+        isOpen: {
+          type: Sequelize.BOOLEAN,
+          allowNull: true,
+          defaultValue: false
         },
         openTime: {
           type: Sequelize.TIME,
-          allowNull: true
+          allowNull: false
         },
         closeTime: {
           type: Sequelize.TIME,
+          allowNull: false
+        },
+        exceptionDescription: {
+          type: Sequelize.STRING(255),
           allowNull: true
         }
-      },
-    );
-
-    // Add unique index on (coachId, weekDay)
-    await queryInterface.addIndex(
-      'OperatingHours',
-      ['coachId', 'weekDay'],
-      {
-        unique: true,
-        name: 'unique_coach_weekday'
       }
     );
   },
 
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.dropTable('OperatingHours');
+    await queryInterface.dropTable('OperatingExceptions');
+
   }
 };

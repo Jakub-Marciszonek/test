@@ -2,25 +2,20 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    // 1. Create 6 users: 2 Clients, 2 Coaches, 2 Organizations
-    const users = await queryInterface.bulkInsert('Users', [
-      { userType: 'Client', userCreatedAt: new Date() },        // 1
-      { userType: 'Client', userCreatedAt: new Date() },        // 2
-      { userType: 'Coach', userCreatedAt: new Date() },         // 3
-      { userType: 'Coach', userCreatedAt: new Date() },         // 4
-      { userType: 'Organization', userCreatedAt: new Date() },  // 5
-      { userType: 'Organization', userCreatedAt: new Date() }   // 6
-    ], { returning: true });
+    // Insert users in a known order
+    await queryInterface.bulkInsert('Users', [
+      { userType: 'Client', userCreatedAt: new Date() },        // userId: 1
+      { userType: 'Client', userCreatedAt: new Date() },        // userId: 2
+      { userType: 'Coach', userCreatedAt: new Date() },         // userId: 3
+      { userType: 'Coach', userCreatedAt: new Date() },         // userId: 4
+      { userType: 'Organization', userCreatedAt: new Date() },  // userId: 5
+      { userType: 'Organization', userCreatedAt: new Date() }   // userId: 6
+    ]);
 
-    // Map users by type
-    const clientUsers = users.filter(u => u.userType === 'Client');
-    const coachUsers = users.filter(u => u.userType === 'Coach');
-    const orgUsers = users.filter(u => u.userType === 'Organization');
-
-    // 2. Create 2 organizations (use orgUsers[0] and orgUsers[1])
+    // Organizations: use userId 5 and 6
     await queryInterface.bulkInsert('Organizations', [
       {
-        organizationsId: orgUsers[0].userId,
+        organizationsId: 5,
         organizationName: 'Doofenshmirtz Evil Inc',
         organizationEmail: 'Doofenshmirtz@acme.com',
         organizationPhone: '+1234567890',
@@ -28,7 +23,7 @@ module.exports = {
         organizationAdress: 'Tri-State Area'
       },
       {
-        organizationsId: orgUsers[1].userId,
+        organizationsId: 6,
         organizationName: 'Globex Inc',
         organizationEmail: 'info@globex.com',
         organizationPhone: '+1987654321',
@@ -37,17 +32,17 @@ module.exports = {
       }
     ]);
 
-    // 3. Create 2 coaches (use coachUsers[0] and coachUsers[1])
+    // Coaches: use userId 3 and 4
     await queryInterface.bulkInsert('Coaches', [
       {
-        coachId: coachUsers[0].userId,
+        coachId: 3,
         coachName: 'Finn',
         coachSurname: 'The human',
         coachPhone: '+1111111111',
         coachEmail: 'finn.hero@example.com'
       },
       {
-        coachId: coachUsers[1].userId,
+        coachId: 4,
         coachName: 'Bob',
         coachSurname: 'Johnson',
         coachPhone: '+1222222222',
@@ -55,11 +50,11 @@ module.exports = {
       }
     ]);
 
-    // 4. Create 2 clients (use clientUsers[0] and clientUsers[1])
+    // Clients: use userId 1 and 2, and organizationsId 5 and 6
     await queryInterface.bulkInsert('Clients', [
       {
-        clientId: clientUsers[0].userId,
-        organizationId: orgUsers[0].userId,
+        clientId: 1,
+        organizationId: 5,
         clientStatus: 'Active',
         clientName: 'Charlie',
         clientSurname: 'Brown',
@@ -73,8 +68,8 @@ module.exports = {
         clientBalance: 100
       },
       {
-        clientId: clientUsers[1].userId,
-        organizationId: orgUsers[1].userId,
+        clientId: 2,
+        organizationId: 6,
         clientStatus: 'Inactive',
         clientName: 'Dana',
         clientSurname: 'White',
@@ -98,15 +93,15 @@ module.exports = {
 
     // Remove coaches by email
     await queryInterface.bulkDelete('Coaches', {
-      coachEmail: ['alice.smith@example.com', 'bob.johnson@example.com']
+      coachEmail: ['finn.hero@example.com', 'bob.johnson@example.com']
     }, {});
 
     // Remove organizations by name
     await queryInterface.bulkDelete('Organizations', {
-      organizationName: ['Acme Corp', 'Globex Inc']
+      organizationName: ['Doofenshmirtz Evil Inc', 'Globex Inc']
     }, {});
 
-    // Remove the 6 users (by userType, assuming these are the only ones of each type for this seeder)
+    // Remove all users of these types (since only seed data is present)
     await queryInterface.bulkDelete('Users', {
       userType: ['Client', 'Coach', 'Organization']
     }, {});

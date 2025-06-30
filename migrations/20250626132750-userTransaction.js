@@ -27,17 +27,11 @@ module.exports = {
           onDelete: 'RESTRICT',
           onUpdate: 'RESTRICT'
         }
-      },
-      {
-        schema: 'CoollaCalendar'
       }
     );
   },
 
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.dropTable({
-      tableName: 'UserTransactions',
-      schema: 'CoollaCalendar'
-    });
+    await queryInterface.dropTable('UserTransactions');
   }
 };

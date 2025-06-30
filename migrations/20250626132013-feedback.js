@@ -35,16 +35,10 @@ module.exports = {
           defaultValue: Sequelize.NOW
         }
       },
-      {
-        schema: 'CoollaCalendar'
-      }
     );
   },
 
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.dropTable({
-      tableName: 'Feedback',
-      schema: 'CoollaCalendar'
-    });
+    await queryInterface.dropTable('Feedback');
   }
 };
