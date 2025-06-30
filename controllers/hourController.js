@@ -6,15 +6,15 @@ const { handleSequelizeForeignKeyError } = require('../utilities/dbErrrorHandler
 
 
 // shows all regular hours for all coaches
-async function getHour (req, res) {
+async function getHour (req, res, eventModel) {
     try {
         const { limit } = buildLimit(req.query);
 
-        const events = await OperatingHours.findAll({
+        const hours = await OperatingHours.findAll({
         limit,
         });
 
-        res.json(events);
+        res.json(hours);
     } catch (err) {
         console.error('Error:', err);
         res.status(500).json({ error: 'Server error' });

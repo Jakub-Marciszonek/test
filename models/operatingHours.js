@@ -14,10 +14,7 @@ module.exports = (sequelize) => {
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: {
-          tableName: 'Coaches',
-          schema: 'CoollaCalendar',
-        },
+        model: 'Coaches',
         key: 'coachId',
       },
       onDelete: 'CASCADE',
@@ -43,7 +40,6 @@ module.exports = (sequelize) => {
     sequelize,
     modelName: 'OperatingHours',
     tableName: 'OperatingHours',
-    schema: 'CoollaCalendar',
     timestamps: false,
     indexes: [
       {

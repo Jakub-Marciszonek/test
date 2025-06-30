@@ -36,7 +36,6 @@ module.exports = (sequelize) => {
     sequelize,
     modelName: 'Transaction',
     tableName: 'Transactions',
-    schema: 'CoollaCalendar',
     timestamps: false
   });
 

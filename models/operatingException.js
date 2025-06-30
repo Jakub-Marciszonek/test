@@ -44,7 +44,6 @@ module.exports = (sequelize) => {
     sequelize,
     modelName: 'OperatingException',
     tableName: 'OperatingExceptions',
-    schema: 'CoollaCalendar',
     timestamps: false
   });
 
