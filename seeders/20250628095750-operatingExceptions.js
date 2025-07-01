@@ -23,6 +23,7 @@ module.exports = {
         isOpen: false,
         openTime: '00:00:00',
         closeTime: '00:00:00',
+        recurrenceType: 'yearly',
         exceptionDescription: 'Christmas Day - Closed'
       },
       {

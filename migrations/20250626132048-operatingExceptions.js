@@ -38,6 +38,10 @@ module.exports = {
           type: Sequelize.TIME,
           allowNull: false
         },
+        recurrenceType: {
+          type: Sequelize.STRING(45),
+          allowNull: true
+        },
         exceptionDescription: {
           type: Sequelize.STRING(255),
           allowNull: true

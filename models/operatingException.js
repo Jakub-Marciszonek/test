@@ -36,8 +36,12 @@ module.exports = (sequelize) => {
       type: DataTypes.TIME,
       allowNull: false
     },
+    recurrenceType: {
+      type: DataTypes.STRING(45),
+      allowNull: true
+    },
     exceptionDescription: {
-      type: DataTypes.STRING(255),
+      type: DataTypes.STRING(45),
       allowNull: true
     }
   }, {

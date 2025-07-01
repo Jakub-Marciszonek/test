@@ -12,19 +12,7 @@ const { createEventValidation, patchEventValidation }
 
 const validate = require('../middlewares/validate.js');
 
-const EventModel = require('../models/event.js')
-
 const router = express.Router();
-
-// ### Database connection setup ###
-// This will be set by the server.js file
-let db;
-let eventModel;
-function setDb(database) {
-    db = database;
-    eventModel = EventModel(db);// eventModel is set to be assignet as event models:
-//                                  models/event.js
-}
 
 // ### Passive API for default render ###
 // Event to be displayed does have to not have empty:
@@ -34,7 +22,7 @@ router.get('/', [
     ...limitValidation,
     validate
 ], async (req, res) => {
-    await eventController.getEvent(req, res, eventModel);
+    await eventController.getEvent(req, res);
 });
 
 // ----------- Get API for client events -----------
@@ -47,7 +35,7 @@ router.get('/client/:clientid', [
     ...idParamsValidation('clientid'),
     validate
 ], async (req, res) => {
-    await eventController.getEventClient(req, res, eventModel);
+    await eventController.getEventClient(req, res);
 });
 
 // ----------- Get API for coache events -----------
@@ -57,7 +45,7 @@ router.get('/coach/:coachid', [
     idParamsValidation('coachid'),
     validate
 ], async (req, res) => {
-    await eventController.getEventCoach(req, res, eventModel);
+    await eventController.getEventCoach(req, res);
 });
 
 // ----------- Get API for admin events -----------
@@ -66,7 +54,7 @@ router.get('/admin', [
     ...limitValidation,
     validate
 ], async (req, res) => {
-    await eventController.getEventAdmin(req, res, eventModel);
+    await eventController.getEventAdmin(req, res);
 });
 
 // ----------- Post API for adding events as client -----------
@@ -76,7 +64,7 @@ idParamsValidation('clientid'), createEventValidation(), validate,
 async (req, res) => {
     try {
         // send query parameters to controller
-        await eventController.createEvent(req, res, eventModel);
+        await eventController.createEvent(req, res);
     } catch (err) {
         return res.status(500).json({ error: err });
     }
@@ -89,7 +77,7 @@ idParamsValidation('coachid'), createEventValidation(), validate,
 async (req, res) => {
     try {
         // send query parameters to controller
-        await eventController.createEventAsCoach(req, res, eventModel);
+        await eventController.createEventAsCoach(req, res);
     } catch (err) {
         return res.status(500).json({ error: err });
     }
@@ -100,7 +88,7 @@ async (req, res) => {
 router.post('/admin/post', createEventLimiter, createEventValidation(), validate, 
 async (req, res) => {
     try {
-        await eventController.createEventAsAdmin(req, res, eventModel);
+        await eventController.createEventAsAdmin(req, res);
     } catch (err) {
         return res.status(500).json({ error: err });
     }
@@ -110,7 +98,7 @@ router.patch('/client/edit/:eventid', createEventLimiter, idParamsValidation('ev
 patchEventValidation(), validate,
 async (req, res) => {
     try {
-        await eventController.editEvent(req, res, eventModel);
+        await eventController.editEvent(req, res);
     } catch (err) {   
         return res.status(500).json({ error: err})
     }
@@ -120,7 +108,7 @@ router.patch('/coach/edit/:eventid', createEventLimiter, idParamsValidation('eve
 patchEventValidation(), validate,
 async (req, res) => {
     try {
-        await eventController.editEventAsCoach(req, res, eventModel);
+        await eventController.editEventAsCoach(req, res);
     } catch (err) {
         return res.status(500).json({ error: err})
     }
@@ -130,7 +118,7 @@ router.patch('/admin/edit/:eventid', createEventLimiter, idParamsValidation('eve
 patchEventValidation(), validate,
 async (req, res) => {
     try {
-        await eventController.editEventAsAdmin(req, res, eventModel);
+        await eventController.editEventAsAdmin(req, res);
     } catch {
         return res.status(500).json({ error: err })
     }
@@ -139,7 +127,7 @@ async (req, res) => {
 router.delete('/client/delete/:eventid', idParamsValidation('eventid'), validate,
 async (req, res) => {
     try {
-        await eventController.deleteEvent (req, res, eventModel);
+        await eventController.deleteEvent (req, res);
     } catch {
         return res.status(500).json({ error: err });
     }
@@ -148,7 +136,7 @@ async (req, res) => {
 router.delete('/coach/delete/:eventid', idParamsValidation('eventid'), validate,
 async (req, res) => {
     try {
-        await eventController.deleteEventAsCoach (req, res, eventModel);
+        await eventController.deleteEventAsCoach (req, res);
     } catch {
         return res.status(500).json({ error: err });
     }
@@ -157,10 +145,10 @@ async (req, res) => {
 router.delete('/admin/delete/:eventid', idParamsValidation('eventid'), validate,
 async (req, res) => {
     try {
-        await eventController.deleteEventAsAdmin (req, res, eventModel);
+        await eventController.deleteEventAsAdmin (req, res);
     } catch {
         return res.status(500).json({ error: err });
     }
 });
 
-module.exports = { router, setDb };
+module.exports = router;

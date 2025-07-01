@@ -131,7 +131,7 @@ async function getEventAdmin (req, res) {
 };
 
 // client post api
-async function createEvent (req, res, eventModel) {
+async function createEvent (req, res) {
     try {
         //const coachIdFromToken = req.user?.userId;
         const clientId = req.params.clientid;
@@ -144,7 +144,6 @@ async function createEvent (req, res, eventModel) {
 
         const { eventDate, startTime } = req.body;
         await eventService.twoHNotice(eventDate, startTime);
-        //const event = await eventModel.create(req.body);
 
 /*
         // --- Restrict editing to the event owner ---
@@ -161,7 +160,7 @@ async function createEvent (req, res, eventModel) {
             clientId: clientId // overwrite clientId from request params
         };
 
-        const eventPromise = eventModel.create(req.body);
+        const eventPromise = Event.create(eventData);
         const event = await withTimeout(eventPromise, 5000, 'DB operation timed out');
         
         return res.status(201).json(event);
@@ -179,7 +178,7 @@ async function createEvent (req, res, eventModel) {
 };
 
 // coach post api
-async function createEventAsCoach (req, res, eventModel) {
+async function createEventAsCoach (req, res) {
     try {
         //const coachIdFromToken = req.user?.userId;
         const coachId = req.params.coachid;// its going to be get after authentication
@@ -190,7 +189,7 @@ async function createEventAsCoach (req, res, eventModel) {
 
         const { eventDate, startTime } = req.body;
         await eventService.twoHNotice(eventDate, startTime);
-        //const event = await eventModel.create(req.body);
+        //const event = await Event.create(req.body);
 
 /*
         // --- Restrict editing to the event owner ---
@@ -207,7 +206,7 @@ async function createEventAsCoach (req, res, eventModel) {
             coachId: coachId // overwrite coachId from request params
         };
 
-        const eventPromise = eventModel.create(req.body);
+        const eventPromise = Event.create(req.body);
         const event = await withTimeout(eventPromise, 5000, 'DB operation timed out');
         return res.status(201).json(event);
     } catch (err) {
@@ -222,13 +221,13 @@ async function createEventAsCoach (req, res, eventModel) {
     } 
 };
 
-async function createEventAsAdmin (req, res ,eventModel) {
+async function createEventAsAdmin (req, res) {
     try{
         // place for admin athentification check code
         const { eventDate, startTime } = req.body;
         await eventService.twoHNotice(eventDate, startTime);
 
-        const eventPromise = eventModel.create(req.body);
+        const eventPromise = Event.create(req.body);
         const event = await withTimeout(eventPromise, 5000, 'DB operation timed out');
         return res.status(201).json(event);
     } catch (err) {
@@ -245,7 +244,7 @@ async function createEventAsAdmin (req, res ,eventModel) {
 };
 
 // client edit api
-async function editEvent (req, res, eventModel) {
+async function editEvent (req, res) {
     try {
         //const coachIdFromToken = req.user?.userId;
         const eventId = req.params.eventid; // for know i thing to acquire event id you need
@@ -285,7 +284,7 @@ async function editEvent (req, res, eventModel) {
     }
 };
 
-async function editEventAsCoach (req, res, eventModel) {
+async function editEventAsCoach (req, res) {
     try {
         //const coachIdFromToken = req.user?.userId;
         const eventId = req.params.eventid; // for know i thing to acquire event id you need
@@ -324,7 +323,7 @@ async function editEventAsCoach (req, res, eventModel) {
     }
 };
 
-async function editEventAsAdmin(req, res, eventModel) {
+async function editEventAsAdmin(req, res) {
     try {
         const eventId = req.params.eventid;
         const updates = req.body;
@@ -348,11 +347,11 @@ async function editEventAsAdmin(req, res, eventModel) {
     }
 };
 
-async function deleteEvent(req, res, eventModel) {
+async function deleteEvent(req, res) {
     try {
         const eventId = req.params.eventid;
         // const clientIdFromToken = req.user.?userId
-        const event = await eventModel.findByPk(eventId);
+        const event = await Event.findByPk(eventId);
         if (!eventId) {
             return res.status(404).json({ error: 'Event not found' });
         }
@@ -371,11 +370,11 @@ async function deleteEvent(req, res, eventModel) {
     }
 };
 
-async function deleteEventAsCoach(req, res, eventModel) {
+async function deleteEventAsCoach(req, res) {
     try {
         const eventId = req.params.eventid;
         // const coachIdFromToken = req.user.?userId
-        const event = await eventModel.findByPk(eventId);
+        const event = await Event.findByPk(eventId);
         if (!eventId) {
             return res.status(404).json({ error: 'Event not found' });
         }
@@ -396,10 +395,14 @@ async function deleteEventAsCoach(req, res, eventModel) {
 
 
 // after login
-async function deleteEventAsAdmin(req, res, eventModel) {
+async function deleteEventAsAdmin(req, res) {
     try {
+/*
+        const adminIdFromToken = req.user?.userId;
+        authenticate admin
+*/
         const eventId = req.params.eventid;
-        const event = await eventModel.findByPk(eventId);
+        const event = await Event.findByPk(eventId);
         if (!event) {
             return res.status(404).json({ error: 'Event not found' });
         }

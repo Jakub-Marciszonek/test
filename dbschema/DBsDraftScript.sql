@@ -175,10 +175,11 @@ CREATE TABLE IF NOT EXISTS `CoollaCalendar`.`OperatingExceptions` (
   `exceptionId` INT NOT NULL AUTO_INCREMENT,
   `coachId` INT NOT NULL,
   `exceptionDate` DATE NOT NULL,
-  `isOpen` TINYINT(1) NULL DEFAULT 0,
+  `isOpen` TINYINT(1) NOT NULL DEFAULT 0,
   `openTime` TIME NOT NULL,
   `closeTime` TIME NOT NULL,
   `exceptionDescription` VARCHAR(255) NULL,
+  `recurrenceType` VARCHAR(45) NULL,
   PRIMARY KEY (`exceptionId`),
   INDEX `coachId_idx` (`coachId` ASC),
   CONSTRAINT `fk_exceptions_coach`
